@@ -44,8 +44,8 @@ CREATE TABLE `gym` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- 场馆场次信息
-CREATE TABLE `gym_type` (
-    `gym_type_id` int(10) PRIMARY KEY AUTO_INCREMENT COMMENT "场馆&运动类型id", 
+CREATE TABLE `gym_site` (
+    `gym_site_id` int(10) PRIMARY KEY AUTO_INCREMENT COMMENT "场馆场次id", 
 	`gym_id` int(10) COMMENT "场馆id", 
     `start_time` varchar(20) COMMENT "场次开始时间，HH:ii",
     `end_time` varchar(20) COMMENT "场次结束时间，HH:ii",
@@ -67,11 +67,11 @@ CREATE TABLE `recharge_order` (
 CREATE TABLE `book_order` (
     `order_id` int(10) PRIMARY KEY AUTO_INCREMENT COMMENT "订单id", 
     `u_id` int(10) COMMENT "用户id",
-    `gym_type_id` int(10) COMMENT "场馆&运动类型id",
+    `gym_site_id` int(10) COMMENT "场馆场次id",
     `date` varchar(50) COMMENT "预定到场的日期",
     `success_time` datetime DEFAULT now() COMMENT "预定成功的时间",
     FOREIGN KEY (`u_id`) REFERENCES `user` (`u_id`) ON DELETE CASCADE,
-    FOREIGN KEY (`gym_type_id`) REFERENCES `gym_type` (`gym_type_id`) ON DELETE CASCADE
+    FOREIGN KEY (`gym_site_id`) REFERENCES `gym_site` (`gym_site_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- 消息
