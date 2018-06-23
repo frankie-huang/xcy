@@ -32,6 +32,7 @@ CREATE TABLE `gym` (
     `gym_name` varchar(100) NOT NULL COMMENT "场馆名称",
     `founder` int(10) NOT NULL COMMENT "创建人的用户ID", 
     `city_id` int(10) NOT NULL COMMENT "地级市id", 
+    `type_id` int(2) NOT NULL COMMENT "场馆运动类型",
     `star` int(1) DEFAULT 0 COMMENT "场馆星级",
     `cover` text DEFAULT NULL COMMENT "场馆封面图地址",
     `detail_address` varchar(200) DEFAULT NULL COMMENT "场馆详细地址",
@@ -46,7 +47,6 @@ CREATE TABLE `gym` (
 CREATE TABLE `gym_type` (
     `gym_type_id` int(10) PRIMARY KEY AUTO_INCREMENT COMMENT "场馆&运动类型id", 
 	`gym_id` int(10) COMMENT "场馆id", 
-    `type_id` int(2) NOT NULL COMMENT "场馆运动类型",
     `start_time` varchar(20) COMMENT "场次开始时间，HH:ii",
     `end_time` varchar(20) COMMENT "场次结束时间，HH:ii",
     `number` int(10) COMMENT "该类型场地数量",
