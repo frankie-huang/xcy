@@ -34,27 +34,44 @@ CREATE TABLE `gym` (
     `city_id` int(10) NOT NULL COMMENT "地级市id", 
     `star` int(1) DEFAULT 0 COMMENT "场馆星级",
     `cover` text DEFAULT NULL COMMENT "场馆封面图地址",
-    `type_id` int(2) NOT NULL COMMENT "场馆运动类型",
     `detail_address` varchar(200) DEFAULT NULL COMMENT "场馆详细地址",
     `contact_info` varchar(50) DEFAULT NULL COMMENT "场馆联系方式",
-    `price` DECIMAL(10, 2) DEFAULT 0 COMMENT "价格，元/小时",
     `detail_msg` text DEFAULT NULL COMMENT "场馆详细介绍",
     `register_time` datetime DEFAULT now() COMMENT "场馆注册时间",
     FOREIGN KEY (`founder`) REFERENCES `user` (`u_id`) ON DELETE CASCADE,
     FOREIGN KEY (`city_id`) REFERENCES `city` (`city_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- 订单
-CREATE TABLE `order` (
+-- 场馆场次信息
+CREATE TABLE `gym_type` (
+    `gym_type_id` int(10) PRIMARY KEY AUTO_INCREMENT COMMENT "场馆&运动类型id", 
+	`gym_id` int(10) COMMENT "场馆id", 
+    `type_id` int(2) NOT NULL COMMENT "场馆运动类型",
+    `start_time` varchar(20) COMMENT "场次开始时间，HH:ii",
+    `end_time` varchar(20) COMMENT "场次结束时间，HH:ii",
+    `number` int(10) COMMENT "该类型场地数量",
+    `price` DECIMAL(10, 2) DEFAULT 0 COMMENT "价格",
+    FOREIGN KEY (`gym_id`) REFERENCES `gym` (`gym_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- 充值订单
+CREATE TABLE `recharge_order` (
+    `order_id` int(10) PRIMARY KEY AUTO_INCREMENT COMMENT "充值订单id", 
+	`u_id` int(10) COMMENT "用户id",
+    `amount` DECIMAL(10, 2) COMMENT "充值金额",
+    `recharge_time` datetime DEFAULT now() COMMENT "充值时间",
+    FOREIGN KEY (`u_id`) REFERENCES `user` (`u_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- 订场订单
+CREATE TABLE `book_order` (
     `order_id` int(10) PRIMARY KEY AUTO_INCREMENT COMMENT "订单id", 
     `u_id` int(10) COMMENT "用户id",
-    `gym_id` int(10) COMMENT "场馆ID",
-    `start_time` datetime DEFAULT now() COMMENT "预定的开始时间",
-    `duration` int(10) DEFAULT 0 COMMENT "到场持续时间，以分钟为单位",
-    `price` DECIMAL(10, 2) DEFAULT 0 COMMENT "支付的金额",
+    `gym_type_id` int(10) COMMENT "场馆&运动类型id",
+    `date` varchar(50) COMMENT "预定到场的日期",
     `success_time` datetime DEFAULT now() COMMENT "预定成功的时间",
     FOREIGN KEY (`u_id`) REFERENCES `user` (`u_id`) ON DELETE CASCADE,
-    FOREIGN KEY (`gym_id`) REFERENCES `gym` (`gym_id`) ON DELETE CASCADE
+    FOREIGN KEY (`gym_type_id`) REFERENCES `gym_type` (`gym_type_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- 消息
@@ -76,7 +93,7 @@ CREATE TABLE `comment` (
     `star` int(1) NOT NULL COMMENT "评价星级",
     `content` text DEFAULT NULL COMMENT "评价内容",
     `comment_time` datetime DEFAULT now() COMMENT "评价时间",
-    FOREIGN KEY (`order_id`) REFERENCES `order` (`order_id`) ON DELETE CASCADE,
+    FOREIGN KEY (`order_id`) REFERENCES `book_order` (`order_id`) ON DELETE CASCADE,
     FOREIGN KEY (`u_id`) REFERENCES `user` (`u_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -98,5 +115,13 @@ CREATE TABLE `gym_staff` (
     PRIMARY KEY (`gym_id`, `staff`, `grant`),
     FOREIGN KEY (`gym_id`) REFERENCES `gym` (`gym_id`) ON DELETE CASCADE,
     FOREIGN KEY (`staff`) REFERENCES `user` (`u_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- 日志表，用于记录后台管理系统的各种操作
+CREATE TABLE `log` (
+    `log_id` int(10) PRIMARY KEY AUTO_INCREMENT COMMENT "日志ID",
+    `u_id` int(10) COMMENT "操作者的用户ID",
+    `operation_detail` text COMMENT "操作细节，包括但不限于登录，审批商户，商户添加修改删除场馆信息等",
+    FOREIGN KEY (`u_id`) REFERENCES `user` (`u_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
