@@ -279,7 +279,21 @@ class IndexController extends Controller {
      * 上传图片
      */
     public function upload_picture() {
-        
+        $upload = new \Think\Upload(); // 实例化上传类
+        $upload->maxSize = 0 ; // 设置附件上传大小
+        $upload->exts = array('jpg', 'gif', 'png', 'jpeg'); // 设置附件上传类型
+        $upload->rootPath = './Upload/picture/'; // 设置附件上传根目录
+        $upload->savePath = ''; //设置附件保存目录
+        $upload->saveName = 'uniqid';//设置附件文件名
+        $info = $upload->upload();
+        if (!$info) { // 上传错误
+            $this->ret($result, 0, $upload->getError());
+        } else {// 上传成功 获取上传文件信息
+            foreach ($info as $file) {
+                $result['url'] = C('domain_url') .'Upload/picture/' . $file['savepath'] . $file['savename'];
+            }
+            $this->ret($result);
+        }
     }
 
     /**
