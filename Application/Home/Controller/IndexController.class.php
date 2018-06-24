@@ -150,6 +150,139 @@ class IndexController extends Controller {
     }
 
     /**
+     * 获取所有的地级市
+     * 从city数据表中读取数据并按照文档接口格式整理返回给前端
+     */
+    public function get_city() {
+
+    }
+
+    /**
+     * 获取热门场馆列表
+     * 根据前端传过来city_id作为筛选条件
+     * 对数据表进行必要的联表操作（如果需要）
+     * 以star从高到低排序
+     * 返回符合接口文档要求的格式的数据
+     */
+    public function get_hot_gym() {
+        $city_id = I('get.city_id');
+        $gym_list = M('gym')
+            ->join('city on city.city_id = gym.city_id', 'LEFT')
+            ->field([
+                'gym_id',
+                'gym_name',
+                'star',
+                'cover',
+                'type_id',
+                'concat(city.city_name, gym.detail_address)' => 'address'
+            ])
+            ->where(['city_id' => $city_id])
+            ->order('star desc')
+            ->select();
+        if ($gym_list === false) {
+            $this->ret($result, 0, '数据库查询出错');
+        } else {
+            $result['gym_list'] = $gym_list;
+            $this->ret($result);
+        }
+    }
+
+    /**
+     * 获取对应运动类型的场馆信息列表
+     * 参考get_hot_gym来实现
+     */
+    public function get_type_gym() {
+
+    }
+
+    /**
+     * 获取我订过的场馆信息列表
+     */
+    public function get_my_historical_gym() {
+        // 读取session里面的u_id，用作查询数据表的筛选条件
+        $u_id = session('u_id');
+
+        // 请继续实现代码
+    }
+
+    /**
+     * 获取某个场馆的具体信息
+     */
+    public function get_gym_detail() {
+
+    }
+
+    /**
+     * 获取一个场馆近五天的场次信息
+     */
+    public function get_a_gym_site() {
+        
+    }
+
+    /**
+     * 订场
+     */
+    public function reserve_gym() {
+        
+    }
+
+    /**
+     * 获取消息列表
+     */
+    public function get_message_list() {
+        
+    }
+
+    /**
+     * 阅读消息
+     */
+    public function read_message() {
+        
+    }
+
+    /**
+     * 获取我的订单列表
+     */
+    public function get_order_list() {
+        
+    }
+
+    /**
+     * 查看订场订单详情
+     */
+    public function get_order_detail() {
+        
+    }
+
+    /**
+     * 申请成为商家
+     */
+    public function to_be_merchant() {
+        
+    }
+
+    /**
+     * 用户评价一个订单
+     */
+    public function comment_order() {
+        
+    }
+
+    /**
+     * 获取一个场馆的所有评价
+     */
+    public function get_gym_comment() {
+        
+    }
+
+    /**
+     * 上传图片
+     */
+    public function upload_picture() {
+        
+    }
+
+    /**
      * 发送短信
      * @param  string  $msg         短信内容
      * @param  string  $mobile      手机号码
