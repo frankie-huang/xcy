@@ -2,8 +2,11 @@
 namespace Home\Controller;
 use Think\Controller;
 class IndexController extends Controller {
-    public function index(){
-        $this->show('<style type="text/css">*{ padding: 0; margin: 0; } div{ padding: 4px 48px;} body{ background: #fff; font-family: "微软雅黑"; color: #333;font-size:24px} h1{ font-size: 100px; font-weight: normal; margin-bottom: 12px; } p{ line-height: 1.8em; font-size: 36px } a,a:hover{color:blue;}</style><div style="padding: 24px 48px;"> <h1>:)</h1><p>欢迎使用 <b>ThinkPHP</b>！</p><br/>版本 V{$Think.version}</div><script type="text/javascript" src="http://ad.topthink.com/Public/static/client.js"></script><thinkad id="ad_55e75dfae343f5a1"></thinkad><script type="text/javascript" src="http://tajs.qq.com/stats?sId=9347272" charset="UTF-8"></script>','utf-8');
+    private $redis;
+
+    private function init_redis() {
+        $this->redis = new redis();
+        $this->redis->connect(C('redis_host'), C('redis_port'));
     }
 
     /**
@@ -24,6 +27,37 @@ class IndexController extends Controller {
     }
 
     /**
+     * 注册时发送验证码，重发间隔设置为60秒
+     */
+    public function reg_sendsms() {
+        $second = 60; // 重发的时间间隔，单位为秒
+        $mobile = I('get.phone_number');
+        // 验证是否正确的手机号码
+        if (preg_match('/^(13[0-9]|14[579]|15[0-3,5-9]|16[6]|17[0135678]|18[0-9]|19[89])\\d{8}$/', $mobile) == 0) {
+            $this->ret($result, 0, '手机号码不符合要求');
+        }
+        // 检测手机号是否已注册
+        if (!empty(M('user')->where(['phone_number' => $mobile])->find())) {
+            $this->ret($result, 0, '该手机号已注册');
+        }
+        $this->init_redis();
+        // 检测该手机号是否在 $second 秒内发送过验证码
+        if ($this->redis->get($mobile) != false) {
+            $this->ret($result, 0 ,'请60秒后再重发');
+        }
+        // 生成四位数验证码
+        $code = rand(1000, 9999);
+        // 拼接短信字符串并发送
+        $msg = $code . '为您的登录验证码，请于' . ($second / 60) . '分钟内填写。如非本人操作，请忽略本短信。';
+        $this->sendsms($msg, $mobile);
+        // 在redis上存储并设置时效
+        $this->redis->set($mobile, $code);
+        $this->redis->EXPIRE($mobile, $second);
+
+        $this->ret($result);
+    }
+
+    /**
      * 注册
      */
     public function register() {
@@ -32,6 +66,7 @@ class IndexController extends Controller {
         $phone_number = trim($post['phone_number']);
         $password = trim($post['password']);
         $gender = trim($post['gender']);
+        $code = trim($post['code']);
         
         if (preg_match('/^(13[0-9]|14[579]|15[0-3,5-9]|16[6]|17[0135678]|18[0-9]|19[89])\\d{8}$/', $phone_number) == 0) {
             $this->ret($result, 0, '手机号码不符合要求');
@@ -48,6 +83,14 @@ class IndexController extends Controller {
             $avatar_url = C('default_male_head_picture');
         } else {
             $this->ret($result, 0, '性别数据错误');
+        }
+        
+        $this->init_redis();
+        // 检测验证码是否正确或过期
+        if ($this->redis->get($phone_number) == false) {
+            $this->ret($result, 0, '验证码已经过期');
+        } elseif ($code != $this->redis->get($phone_number)) {
+            $this->ret($result, 0, '验证码错误');
         }
 
         $user_info = [
