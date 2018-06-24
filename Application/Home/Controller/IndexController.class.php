@@ -5,7 +5,7 @@ class IndexController extends Controller {
     private $redis;
 
     private function init_redis() {
-        $this->redis = new Redis();
+        $this->redis = new \Redis();
         $this->redis->connect(C('redis_host'), C('redis_port'));
     }
 
