@@ -154,7 +154,14 @@ class IndexController extends Controller {
      * 从city数据表中读取数据并按照文档接口格式整理返回给前端
      */
     public function get_city() {
-
+        $city_list = M('city')
+            ->select();
+        if($city_list === false){
+            $this->ret($result,0,'数据库查询出错');
+        } else {
+            $result['city_list'] = $city_list;
+            $this->ret($result);
+        }
     }
 
     /**
@@ -176,7 +183,7 @@ class IndexController extends Controller {
                 'type_id',
                 'concat(city.city_name, gym.detail_address)' => 'address'
             ])
-            ->where(['city_id' => $city_id])
+            ->where(['gym.city_id' => $city_id])
             ->order('star desc')
             ->select();
         if ($gym_list === false) {
@@ -191,87 +198,354 @@ class IndexController extends Controller {
      * 获取对应运动类型的场馆信息列表
      * 参考get_hot_gym来实现
      */
-    public function get_type_gym() {
+    public function get_type_gym($city_id,$type_id = '8',$sort_type = '0') {
+        if(empty(I('get.type_id')!==true)){
+            $type_id = I('get.type_id');
+        }
+        if(empty(I('get.sort_type')!==true)){
+            $sort_type = I('get.sort_type');
+        }
+        $gym_list = M('gym')
+            ->join('city on city.city_id = gym.city_id', 'LEFT')
+            ->field([
+                'gym_id',
+                'gym_name',
+                'star',
+                'cover',
+                'type_id',
+                'concat(city.city_name, gym.detail_address)' => 'address'
+            ])
+            ->where([
+                'gym.city_id' => $city_id,
+            ]);
+
+            //type_id 默认值是8， type_id等于8时， 返回所有场馆
+            if($type_id != 8){
+                $gym_list = $gym_list->where([
+                    'gym.type_id' => $type_id
+                ]);
+            }
+            if($sort_type == 1){
+                $gym_list = $gym_list->order('star desc')->select();
+            } else {
+                $gym_list = $gym_list->select();
+            }
+            if ($gym_list === false) {
+                $this->ret($result, 0, '数据库查询出错');
+            } else {
+                $result['gym_list'] = $gym_list;
+                $this->ret($result);
+            }
 
     }
 
     /**
-     * 获取我订过的场馆信息列表
+     * 获取我订过的场馆信息列表  
+     * 未完成,  有bug 会返回重复的场馆信息
      */
     public function get_my_historical_gym() {
         // 读取session里面的u_id，用作查询数据表的筛选条件
         $u_id = session('u_id');
-
         // 请继续实现代码
+        // $gym_list = M('gym')
+        //     ->join('gym_site on gym_site.gym_id = gym.gym_id','LEFT')
+        //     ->join('book_order on book_order.gym_site_id = gym_site.gym_site_id','LEFT')
+        //     ->join('city on city.city_id = gym.city_id', 'LEFT')
+            // ->field([
+            //     'gym_id',
+            //     'u_id',
+            //     'gym_name',
+            //     'star',
+            //     'cover',
+            //     'type_id',
+            //     'concat(city.city_name, gym.detail_address)' => 'address'
+            // ])
+        //     ->where(['book_order.u_id' => $u_id])
+        //     ->select();
+        //     if ($gym_list === false) {
+        //         $this->ret($result, 0, '数据库查询出错');
+        //     } else {
+        //         $result['gym_list'] = $gym_list;
+        //         $this->ret($result);
+        //     }
+        $gym_list = M('gym')
+            ->join('gym_site on gym_site.gym_id = gym.gym_id','LEFT')
+            ->join('book_order on book_order.gym_site_id = gym_site.gym_site_id','LEFT')
+            ->join('city on city.city_id = gym.city_id', 'LEFT')
+            ->field([
+                'gym.gym_id',
+                'u_id',
+                'gym_name',
+                'star',
+                'cover',
+                'type_id',
+                'concat(city.city_name, gym.detail_address)' => 'address'
+            ])
+            ->where(['book_order.u_id' => $u_id])
+            ->select();
+        if ($gym_list === false) {
+            $this->ret($result, 0, '数据库查询出错');
+        } else {
+            $result['gym_list'] = $gym_list;
+            $this->ret($result);
+        }
+        
     }
 
     /**
      * 获取某个场馆的具体信息
      */
     public function get_gym_detail() {
-
+        $gym_id	 = I('get.gym_id');
+        $gym_list = M('gym')
+            ->join('city on city.city_id = gym.city_id', 'LEFT')
+            ->field([
+                'gym_id',
+                'gym_name',
+                'star',
+                'cover',
+                'type_id',
+                'concat(city.city_name, gym.detail_address)' => 'address',
+                'contact_info',
+                'detail_msg'
+            ])
+            ->where(['gym.gym_id' => $gym_id])
+            ->find();
+        if ($gym_list === false) {
+            $this->ret($result, 0, '数据库查询出错');
+        } else {
+            $result['gym_list'] = $gym_list;
+            $this->ret($result);
+        }
     }
 
     /**
      * 获取一个场馆近五天的场次信息
+     * 未完成，选择5天,剩余数量
      */
     public function get_a_gym_site() {
-        
+        $gym_id	 = I('get.gym_id');
+        $gym_site_list = M('gym_site')
+            ->field([
+                'gym_site_id',
+                'start_time',
+                'end_time',
+                'date',
+                'price',
+            ]);
     }
 
     /**
      * 订场
      */
     public function reserve_gym() {
+        $this->islogin();
+        $gym_site_id = I('post.gym_site_id');
+        $u_id = session('u_id');
+        // $u_id = 1;
         
+
+
+        $gym_book_list = M('book_order')
+            ->where(['book_order.gym_site_id' => $gym_site_id])
+            ->select();
+        
+        $gym_site = M('gym_site')
+            ->where(['gym_site.gym_site_id' => $gym_site_id])
+            ->find();
+            
+        $number = $gym_site['number'];
+
+        $book_number = count($gym_book_list);
+        if($number > $book_number){
+            $time = date('y-m-d h:i:s',time());
+            // echo $time;
+            $data['u_id'] = $u_id;
+            $data['gym_site_id'] = $gym_site_id;
+            $data['success_time'] = $time;
+
+            $book = M('book_order')
+                ->add($data);
+                $this->ret($result);
+        } else {
+            $this->ret($result, 0, '数据库查询出错');
+        }
     }
 
     /**
-     * 获取消息列表
+     * 获取消息列表  bug  当is_read==0 返回了全部的信息
      */
     public function get_message_list() {
-        
+        // $this->islogin();
+        // $u_id = session('u_id');
+        $u_id = 1;
+        $is_read = I('get.is_read');
+        $message_list = M('message')
+            ->field([
+                'message_id',
+                'is_read',
+                'content',
+                'from',
+                'time'
+            ])
+            ->where(['u_id' => $u_id]);
+        if($is_read === 0 || $is_read == 1){
+            $message_list = $message_list
+                ->where(['message.is_read' => $is_read])
+                ->select();
+        } else {
+            $message_list = $message_list->select();
+        }
+        if ($message_list === false) {
+            $this->ret($result, 0, '数据库查询出错');
+        } else {
+            $result['message_list'] = $message_list;
+            $this->ret($result);
+        }
     }
 
     /**
      * 阅读消息
      */
     public function read_message() {
-        
+        $this->islogin();
+        $message_id = I('get.message_id');
+        $message_detail = M('message')
+            ->field([
+                'message_id',
+                'is_read',
+                'content',
+                'from',
+                'time'
+            ])
+            ->where(['message.message_id' => $message_id])
+            ->find();
+
+        //这里把is_read置为1
+        $read = M('message')
+            ->where(['message.message_id' => $message_id])
+            ->setField('is_read','1');
+
+        if ($message_detail === false) {
+            $this->ret($result, 0, '数据库查询出错');
+        } else {
+            $result['detail'] = $message_detail;
+            $this->ret($result);
+        }
     }
 
     /**
      * 获取我的订单列表
      */
     public function get_order_list() {
+        // $this->islogin();
         
     }
 
     /**
      * 查看订场订单详情
+     * 未完成，缺少字段 type_name time_msg
      */
     public function get_order_detail() {
-        
+        $order_id = I('get.order_id');
+        $order_detail = M('book_order')
+            ->join('gym_site on gym_site.gym_site_id = book_order.gym_site_id','LEFT')
+            ->join('gym on gym.gym_id = gym_site.gym_id','LEFT')
+            ->field([
+                'order_id',
+                'gym.gym_id',
+                'gym.gym_name',
+                'gym.type_id',
+                'gym_site.price',
+                'success_time'=>'time'
+            ])
+            ->where(['book_order.order_id' => $order_id])
+            ->select();
+        if ($order_detail === false) {
+            $this->ret($result, 0, '数据库查询出错');
+        } else {
+            $result['detail'] = $order_detail;
+            $this->ret($result);
+        }
     }
 
     /**
      * 申请成为商家
      */
     public function to_be_merchant() {
+        $this->islogin();
+        $u_id = session('u_id');
+        $data['u_id'] = $u_id;
+        $data['apply_time'] = date('y-m-d h:i:s',time());
+        $data['status'] = 0;
+        $data['last_time'] = date('y-m-d h:i:s',time());
+
+        $add_result = M('apply_list')
+            ->add($data);
         
+        if($add_result){
+            $this->ret($result);
+        } else {
+            $this->ret($result, 0, '出错');
+        }
     }
 
     /**
      * 用户评价一个订单
      */
     public function comment_order() {
+        $this->islogin();
+        $u_id = session('u_id');
+        // $u_id = 1;
+        $order_id = I('post.order_id');
+        $star = I('post.star');
+        $content = I('post.content');
+        $time = date('y-m-d h:i:s',time());
+
+        $data['u_id'] = $u_id;
+        $data['order_id'] = $order_id;
+        $data['star'] = $star;
+        $data['content'] = $content;
+        $data['comment_time'] = $time;
+
+        $add_comment = M('comment')
+            ->add($data);
         
+        if($add_comment){
+            $result['comment_time'] = $time;
+            $this->ret($result);
+        } else {
+            $this->ret($result, 0, '出错');
+        }
     }
 
     /**
      * 获取一个场馆的所有评价
      */
     public function get_gym_comment() {
+        $gym_id = I('get.gym_id');
+        $gym_comment_list = M('comment')
+            ->join('user on user.u_id = comment.u_id','LEFT')
+            ->join('book_order on book_order.order_id = comment.order_id','LEFT')
+            ->join('gym_site on gym_site.gym_site_id = book_order.gym_site_id','LEFT')
+            ->field([
+                'user.u_id',
+                'user.phone_number',
+                'user.avatar_url',
+                'star',
+                'content',
+                'comment_time'
+            ])
+            ->where(['gym_site.gym_id' => $gym_id])
+            ->select();
+            
+
+        if ($gym_comment_list === false) {
+            $this->ret($result, 0, '数据库查询出错');
+        } else {
+            $result['comment_list'] = $gym_comment_list;
+            $this->ret($result);
+        }
         
     }
 
