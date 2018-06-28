@@ -6,7 +6,7 @@ use `xcy`;
 -- 用户信息
 CREATE TABLE `user` (
     `u_id` int(10) PRIMARY KEY AUTO_INCREMENT COMMENT "本系统用户唯一标识id",
-    `nick` varchar(200) COMMENT "昵称", 
+    `nick` varchar(200) DEFAULT "" COMMENT "昵称", 
     `phone_number` varchar(20) NOT NULL COMMENT "用户手机号码", 
     `password` varchar(256) NOT NULL COMMENT "密码",
     `avatar_url` text DEFAULT NULL COMMENT "用户头像地址", 

@@ -17,7 +17,7 @@ class IndexController extends Controller {
         if ($u_id == null) {
             $this->ret($result, -1, '未登录');
         } else {
-            $get_user_info = M('user')->field('phone_number, avatar_url, gender, balance')->where(['u_id' => $u_id])->find();
+            $get_user_info = M('user')->field('nick, phone_number, avatar_url, gender, balance')->where(['u_id' => $u_id])->find();
             if ($get_user_info == null) {
                 $this->ret($result, 0, 'session指向的用户不存在');
             } else {
