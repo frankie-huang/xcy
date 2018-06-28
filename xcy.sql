@@ -47,6 +47,7 @@ CREATE TABLE `gym` (
 CREATE TABLE `gym_site` (
     `gym_site_id` int(10) PRIMARY KEY AUTO_INCREMENT COMMENT "场馆场地id", 
 	`gym_id` int(10) COMMENT "场馆id", 
+    `name` varchar(500) COMMENT "场地名字",
     `type_id` int(2) NOT NULL COMMENT "场馆运动类型",
     `number` int(10) COMMENT "该场地容纳数量",
     FOREIGN KEY (`gym_id`) REFERENCES `gym` (`gym_id`) ON DELETE CASCADE
