@@ -631,7 +631,7 @@ class IndexController extends Controller {
         // if (false == $ret) {
         //     $error_msg = curl_error($curl);
         // }
-        curl_close($ch);
+        curl_close($curl);
 
         return json_decode($ret, true);
     }
