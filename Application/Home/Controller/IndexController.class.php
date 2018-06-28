@@ -64,6 +64,7 @@ class IndexController extends Controller {
         $db_user = M('user');
         $post = I('post.');
         $phone_number = trim($post['phone_number']);
+        $nick = empty($post['nick']) ? '' : trim($post['nick']);
         $password = trim($post['password']);
         $gender = trim($post['gender']);
         $code = trim($post['code']);
@@ -94,6 +95,7 @@ class IndexController extends Controller {
         }
 
         $user_info = [
+            'nick' => $nick,
             'phone_number' => $phone_number,
             'password' => password_hash($password, PASSWORD_BCRYPT),
             'avatar_url' => $avatar_url,
@@ -135,6 +137,7 @@ class IndexController extends Controller {
         // 设置session
         session('u_id', $user_info['u_id']);
         // 返回数据
+        $result['nick'] = $user_info['nick'];
         $result['avatar_url'] = $user_info['avatar_url'];
         $result['gender'] = $user_info['gender'];
         $result['balance'] = $user_info['balance'];
