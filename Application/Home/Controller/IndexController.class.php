@@ -244,11 +244,10 @@ class IndexController extends Controller {
 
     /**
      * 获取我订过的场馆信息列表  
-     * 未完成,  有bug 会返回重复的场馆信息
      */
     public function get_my_historical_gym() {
         // 读取session里面的u_id，用作查询数据表的筛选条件
-        $u_id = session('u_id');
+        $u_id = 1;
         // 请继续实现代码
         // $gym_list = M('gym')
         //     ->join('gym_site on gym_site.gym_id = gym.gym_id','LEFT')
@@ -271,10 +270,28 @@ class IndexController extends Controller {
         //         $result['gym_list'] = $gym_list;
         //         $this->ret($result);
         //     }
-        $gym_list = M('gym')
-            ->join('gym_site on gym_site.gym_id = gym.gym_id','LEFT')
-            ->join('book_order on book_order.gym_site_id = gym_site.gym_site_id','LEFT')
-            ->join('city on city.city_id = gym.city_id', 'LEFT')
+        // $gym_list = M('gym')
+        //     ->join('gym_site on gym_site.gym_id = gym.gym_id','LEFT')
+        //     ->join('book_order on book_order.gym_site_id = gym_site.gym_site_id','LEFT')
+        //     ->join('city on city.city_id = gym.city_id', 'LEFT')
+        //     ->field([
+        //         'gym.gym_id',
+        //         'u_id',
+        //         'gym_name',
+        //         'star',
+        //         'cover',
+        //         'type_id',
+        //         'concat(city.city_name, gym.detail_address)' => 'address'
+        //     ])
+        //     ->where(['book_order.u_id' => $u_id])
+        //     ->select();
+
+
+
+        $gym_list = M('book_order')
+            ->join('gym_site on gym_site.gym_site_id = book_order.gym_site_id','LEFT')
+            ->join('gym on gym.gym_id = gym_site.gym_id')
+            ->join('city on city.city_id = gym.city_id','LEFT')
             ->field([
                 'gym.gym_id',
                 'u_id',
@@ -284,8 +301,11 @@ class IndexController extends Controller {
                 'type_id',
                 'concat(city.city_name, gym.detail_address)' => 'address'
             ])
+            ->group('gym.gym_id')
             ->where(['book_order.u_id' => $u_id])
             ->select();
+
+
         if ($gym_list === false) {
             $this->ret($result, 0, '数据库查询出错');
         } else {
@@ -361,7 +381,7 @@ class IndexController extends Controller {
 
         $book_number = count($gym_book_list);
         if($number > $book_number){
-            $time = date('y-m-d h:i:s',time());
+            $time = date('y-m-d H:i:s',time());
             // echo $time;
             $data['u_id'] = $u_id;
             $data['gym_site_id'] = $gym_site_id;
@@ -376,7 +396,7 @@ class IndexController extends Controller {
     }
 
     /**
-     * 获取消息列表  bug  当is_read==0 返回了全部的信息
+     * 获取消息列表
      */
     public function get_message_list() {
         // $this->islogin();
@@ -392,7 +412,7 @@ class IndexController extends Controller {
                 'time'
             ])
             ->where(['u_id' => $u_id]);
-        if($is_read === 0 || $is_read == 1){
+        if($is_read == 0 || $is_read == 1){
             $message_list = $message_list
                 ->where(['message.is_read' => $is_read])
                 ->select();
@@ -441,8 +461,11 @@ class IndexController extends Controller {
      * 获取我的订单列表
      */
     public function get_order_list() {
-        // $this->islogin();
-        
+        $date1 = date('y-m-d H:i:s',time());
+        $date2 = date('y-m-d H:i:s',time());
+        echo strtotime($date1);
+        echo "     ";
+        echo strtotime("+1 day");
     }
 
     /**
@@ -479,9 +502,9 @@ class IndexController extends Controller {
         $this->islogin();
         $u_id = session('u_id');
         $data['u_id'] = $u_id;
-        $data['apply_time'] = date('y-m-d h:i:s',time());
+        $data['apply_time'] = date('y-m-d H:i:s',time());
         $data['status'] = 0;
-        $data['last_time'] = date('y-m-d h:i:s',time());
+        $data['last_time'] = date('y-m-d H:i:s',time());
 
         $add_result = M('apply_list')
             ->add($data);
@@ -503,7 +526,7 @@ class IndexController extends Controller {
         $order_id = I('post.order_id');
         $star = I('post.star');
         $content = I('post.content');
-        $time = date('y-m-d h:i:s',time());
+        $time = date('y-m-d H:i:s',time());
 
         $data['u_id'] = $u_id;
         $data['order_id'] = $order_id;
