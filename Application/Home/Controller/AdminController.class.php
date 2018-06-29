@@ -11,14 +11,30 @@ class AdminController extends Controller {
         if ($u_id == null) {
             $this->ret($result, -1, '未登录');
         } else {
-            $get_user_info = M('user')->field('phone_number, avatar_url, gender, admin_weight')->where(['u_id' => $u_id])->find();
-            if ($get_user_info == null) {
-                $this->ret($result, 0, 'session指向的用户不存在');
-            } else {
-                if ($get_user_info['admin_weight'] == 0) {
-                    $this->ret($result, 0, 'session指向的用户权限不足以登录后台系统');
+            $is_gym_admin = session('gym_admin');
+            if (!empty($is_gym_admin) && $is_gym_admin == true) {
+                // 商家管理员账号
+                $get_user_info = M('gym_admin')->where(['gym_admin_id' => $u_id])->find();
+                if ($get_user_info == null) {
+                    $this->ret($result, 0, 'session指向的用户不存在');
+                } else {
+                    $result['account'] = $get_user_info['account'];
+                    $result['admin_weight'] = 1;
+                    $this->ret($result);
                 }
-                $this->ret($get_user_info);
+            } else {
+                // 商家BOSS或超管
+                $get_user_info = M('user')->where(['u_id' => $u_id])->find();
+                if ($get_user_info == null) {
+                    $this->ret($result, 0, 'session指向的用户不存在');
+                } else {
+                    if ($get_user_info['admin_weight'] == 0) {
+                        $this->ret($result, 0, 'session指向的用户权限不足以登录后台系统');
+                    }
+                    $result['account'] = $get_user_info['phone_number'];
+                    $result['admin_weight'] = $get_user_info['admin_weight'];
+                    $this->ret($result);
+                }
             }
         }
     }
@@ -27,36 +43,52 @@ class AdminController extends Controller {
      * 登录
      */
     public function login() {
-        $db_user = M('user');
         $post = I('post.');
-        $phone_number = trim($post['phone_number']);
+        $account = trim($post['account']);
         $password = trim($post['password']);
         
-        if (preg_match('/^(13[0-9]|14[579]|15[0-3,5-9]|16[6]|17[0135678]|18[0-9]|19[89])\\d{8}$/', $phone_number) == 0) {
-            $this->ret($result, 0, '手机号码不符合要求');
+        if (preg_match('/^(13[0-9]|14[579]|15[0-3,5-9]|16[6]|17[0135678]|18[0-9]|19[89])\\d{8}$/', $account) == 0) {
+            // 非手机号登录
+            $db_user = M('gym_admin');
+            $user_info = $db_user->where(['account' => $account])->find();
+            if (empty($user_info)) {
+                $this->ret($result, 0, '该账号未注册');
+            }
+            // 验证密码
+            if (!password_verify($password, $user_info['password'])) {
+                $this->ret($result, 0, '密码错误');
+            }
+            // 设置session
+            session('gym_admin', true);
+            session('u_id', $user_info['gym_admin_id']);
+            session('admin_weight', 1);
+            // 返回数据
+            $result['account'] = $user_info['account'];
+            $result['admin_weight'] = 1;
+            $this->ret($result);
+        } else {
+            // 手机号登录
+            $db_user = M('user');
+            $user_info = $db_user->where(['phone_number' => $account])->find();
+            if (empty($user_info)) {
+                $this->ret($result, 0, '该手机号码未注册');
+            }
+            // 验证密码
+            if (!password_verify($password, $user_info['password'])) {
+                $this->ret($result, 0, '密码错误');
+            }
+            // 检测其权限是否足以登录后台管理系统
+            if ($user_info['admin_weight'] == 0) {
+                $this->ret($result, 0, '无权限登录后台管理系统，如是商家，可在公众号页面申请成为商家');
+            }
+            // 设置session
+            session('u_id', $user_info['u_id']);
+            session('admin_weight', $user_info['admin_weight']);
+            // 返回数据
+            $result['account'] = $user_info['phone_number'];
+            $result['admin_weight'] = $user_info['admin_weight'];
+            $this->ret($result);
         }
-
-        $user_info = $db_user->where(['phone_number' => $phone_number])->find();
-        if (empty($user_info)) {
-            $this->ret($result, 0, '该手机号码未注册');
-        }
-        // 验证密码
-        if (!password_verify($password, $user_info['password'])) {
-            $this->ret($result, 0, '密码错误');
-        }
-        // 检测其权限是否足以登录后台管理系统
-        if ($user_info['admin_weight'] == 0) {
-            $this->ret($result, 0, '无权限登录后台管理系统，如是商家，可在公众号页面申请成为商家');
-        }
-        // 设置session
-        session('u_id', $user_info['u_id']);
-        session('admin_weight', $user_info['admin_weight']);
-        // 返回数据
-        $result['phone_number'] = $user_info['phone_number'];
-        $result['avatar_url'] = $user_info['avatar_url'];
-        $result['gender'] = $user_info['gender'];
-        $result['admin_weight'] = $user_info['admin_weight'];
-        $this->ret($result);
     }
 
     /**

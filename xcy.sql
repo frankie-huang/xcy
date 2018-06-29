@@ -149,7 +149,7 @@ CREATE TABLE `gym_admin` (
     `gym_admin_id` int(10) COMMENT "管理员账号ID",
     `role_id` int(10) COMMENT "角色ID",
     `account` varchar(200) COMMENT "管理员账号名",
-    `password` varchar(200) COMMENT "账号密码",
+    `password` varchar(256) COMMENT "账号密码",
     FOREIGN KEY (`role_id`) REFERENCES `gym_role` (`role_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
