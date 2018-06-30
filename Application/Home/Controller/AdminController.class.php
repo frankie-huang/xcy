@@ -3,6 +3,16 @@ namespace Home\Controller;
 use Think\Controller;
 class AdminController extends Controller {
 
+    public function __construct()
+    {
+        // 超管权重
+        $this->admin_weight = 10;
+        // 商家BOSS权重
+        $this->boss_weight = 2;
+        // 商家员工权重
+        $this->staff_weight = 1;
+    }
+
     /**
      * 验证是否登录态
      */
@@ -140,8 +150,6 @@ class AdminController extends Controller {
                     }
                 }
             }
-            $result['gym_list'] = $gym_list;
-            $this->ret($result);
         } elseif ($admin_weight == 2) {
             // 如果是商家BOSS
             $u_id = session('u_id');
@@ -185,13 +193,133 @@ class AdminController extends Controller {
             }
             if (!empty($type_id)) {
                 for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
-
+                    if ($gym_list[$i]['type_id'] != $type_id) {
+                        unset($gym_list[$i]);
+                    }
                 }
+                $gym_list = array_values($gym_list);
+            }
+            for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
+                $gym_list[$i]['key'] = $i;
             }
         } elseif ($admin_weight == 1) {
             // 如果只是商家员工
+            $u_id = session('u_id');
+            $get_gym_id = $db_gym->table('gym_role')
+                ->field('gym_id')
+                ->join('gym_admin on gym_admin.role_id = gym_role.role_id', 'LEFT')
+                ->where(['gym_admin_id' => $u_id])
+                ->find();
+            if (empty($get_gym_id)) {
+                $this->ret($result, 0, '当前管理员账号不属于任何场馆');
+            }
+            $gym_list = $db_gym
+                ->join('user on gym.founder = user.u_id', 'LEFT')
+                ->join('city on city.city_id = gym.city_id', 'LEFT')
+                ->field([
+                    'gym_id',
+                    'gym_name',
+                    'star',
+                    'cover',
+                    'contact_info',
+                    'user.phone_number' => 'founder',
+                    'gym.city_id',
+                    'city.city_name',
+                    'detail_address',
+                    'detail_msg',
+                ])
+                ->where(['gym.gym_id' => $get_gym_id['gym_id']]);
+            if (!empty($city_id)) {
+                $gym_list = $gym_list->where(['gym.city' => $city_id]);
+            }
+            $gym_list = $gym_list->select();
+            for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
+                // 判断其type_id
+                $get_gym_site = $db_gym->table('gym_site')->field('type_id')->where(['gym_id' => $gym_list[$i]['gym_id']])->select();
+                $num = count($get_gym_site);
+                if ($num == 0) {
+                    $gym_list[$i]['type_id'] = 9;
+                } else {
+                    $gym_list[$i]['type_id'] = $get_gym_site[0]['type_id'];
+                    if ($num > 1) {
+                        for ($j = 1; $j < $num; $j++) {
+                            if ($get_gym_site[$j]['type_id'] != $get_gym_site[0]['type_id']) {
+                                $gym_list[$i]['type_id'] = 8;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (!empty($type_id)) {
+                for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
+                    if ($gym_list[$i]['type_id'] != $type_id) {
+                        unset($gym_list[$i]);
+                    }
+                }
+                $gym_list = array_values($gym_list);
+            }
+            for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
+                $gym_list[$i]['key'] = $i;
+            }
+        } else {
+            $this->ret($result, 0, '无权限');
+        }
+        $result['gym_list'] = $gym_list;
+        $this->ret($result);
+    }
+
+    /**
+     * 添加管理员账号
+     */
+    public function add_gym_admin() {
+        $u_id = session('u_id');
+        $admin_weight = session('admin_weight');
+        $role_id = I('post.role_id');
+        $password = I('post.password');
+        if (empty($u_id)) {
+            $this->ret($result, -1, '未登录');
+        }
+        if ($admin_weight < 1) {
+            $this->ret($result, 0, '无权限');
+        }
+        $db_admin = M('gym_admin');
+        if ($admin_weight < 10) {
+            $get_gym_id = $db_admin->table('gym_role')->field('gym_id')->where(['role_id' => $role_id])->find();
+            if (empty($get_gym_id)) {
+                $this->ret($result, 0, '数据库查询不到对应角色');
+            }
+            if ($admin_weight == 1) {
+                // 商家管理员
+                $get_gym_admin = $db_admin->field('role_id')->where(['gym_admin_id' => $u_id])->find();
+                $get_role_operation = $db_admin->table('gym_role')->field('operation_list')->where(['role_id' => $get_gym_admin['role_id']])->find();
+                $operation_list = explode('|', $get_role_operation['operation_list']);
+                if (!in_array('1', $operation_list)) {
+                    $this->ret($result, 0, '无权限添加管理员');
+                }
+                if ($get_gym_id['gym_id'] != ($db_admin->table('gym_role')->field('gym_id')->where(['role_id' => $get_gym_admin['role_id']])->find())['gym_id']) {
+                    $this->ret($result, 0, '无权限添加其他场馆的管理员');
+                }
+            } else {
+                // 商家BOSS，判断场馆($get_gym_id['gym_id'])是否其创建
+
+            }
+            // $get_gym = $db_admin->table('gym')
         }
     }
+
+    /**
+     * 生成随机字符串
+     */
+    private function generate_string($length = 4) {  
+        // 密码字符集，可任意添加你需要的字符
+        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $string = '';
+        for ($i = 0; $i < $length; $i++) {
+            $string .= $chars[mt_rand(0, strlen($chars) - 1)];
+        }
+        return $string;
+    } 
 
     private function ret(&$result, $status = 1, $msg = "") {
         $result['status'] = $status;
