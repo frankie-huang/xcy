@@ -140,6 +140,7 @@ INSERT INTO `gym_operation` (`label`) VALUES
 CREATE TABLE `gym_role` (
     `role_id` int(10) PRIMARY KEY AUTO_INCREMENT COMMENT "角色ID",
     `gym_id` int(10) COMMENT "场馆id", 
+    `name` varchar(200) COMMENT "角色名称",
     `operation_list` varchar(100) COMMENT "角色拥有的操作列表，比如拥有查看订单和查看场馆评论的操作，就是3|4",
     FOREIGN KEY (`gym_id`) REFERENCES `gym` (`gym_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
