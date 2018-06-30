@@ -103,8 +103,9 @@ class AdminController extends Controller {
             $this->ret($result, -1, '登录态失效');
         }
         if ($admin_weight == 10) {
+            $db_gym = M('gym');
             // 如果是超级管理员
-            $gym_list = M('gym')
+            $gym_list = $db_gym
                 ->join('user on gym.founder = user.u_id', 'LEFT')
                 ->join('city on city.city_id = gym.city_id', 'LEFT')
                 ->field([
@@ -112,20 +113,21 @@ class AdminController extends Controller {
                     'gym_name',
                     'star',
                     'cover',
-                    'type_id',
                     'contact_info',
                     'user.phone_number' => 'founder',
-                    'city_id',
+                    'gym.city_id',
                     'city.city_name',
                     'detail_address',
                     'detail_msg',
                 ])
                 ->select();
             for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
-                $gym_list[$i] = array_merge($gym_list[$i], [
-                    'can_edit' => 1,
-                    'can_delete' => 1,
-                ]);
+                $gym_list[$i]['key'] = $i;
+                // 判断其type_id
+                $get_gym_site = $db_gym->table('gym_site')->field('type_id')->where(['gym_id' => $gym_list[$i]['gym_id']])->select();
+                if ($get_gym_site == null) {
+
+                }
             }
         } elseif ($admin_weight == 2) {
             // 如果是商家BOSS
@@ -133,5 +135,11 @@ class AdminController extends Controller {
         } elseif ($admin_weight == 1) {
             // 如果只是商家员工
         }
+    }
+
+    private function ret(&$result, $status = 1, $msg = "") {
+        $result['status'] = $status;
+        $result['msg'] = $msg;
+        $this->ajaxReturn($result);
     }
 }
