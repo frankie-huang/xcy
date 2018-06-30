@@ -3,16 +3,6 @@ namespace Home\Controller;
 use Think\Controller;
 class AdminController extends Controller {
 
-    public function __construct()
-    {
-        // 超管权重
-        $this->admin_weight = 10;
-        // 商家BOSS权重
-        $this->boss_weight = 2;
-        // 商家员工权重
-        $this->staff_weight = 1;
-    }
-
     /**
      * 验证是否登录态
      */
