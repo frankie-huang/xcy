@@ -102,8 +102,8 @@ class AdminController extends Controller {
         if (empty($admin_weight)) {
             $this->ret($result, -1, '登录态失效');
         }
+        $db_gym = M('gym');
         if ($admin_weight == 10) {
-            $db_gym = M('gym');
             // 如果是超级管理员
             $gym_list = $db_gym
                 ->join('user on gym.founder = user.u_id', 'LEFT')
@@ -125,13 +125,69 @@ class AdminController extends Controller {
                 $gym_list[$i]['key'] = $i;
                 // 判断其type_id
                 $get_gym_site = $db_gym->table('gym_site')->field('type_id')->where(['gym_id' => $gym_list[$i]['gym_id']])->select();
-                if ($get_gym_site == null) {
+                $num = count($get_gym_site);
+                if ($num == 0) {
+                    $gym_list[$i]['type_id'] = 9;
+                } else {
+                    $gym_list[$i]['type_id'] = $get_gym_site[0]['type_id'];
+                    if ($num > 1) {
+                        for ($j = 1; $j < $num; $j++) {
+                            if ($get_gym_site[$j]['type_id'] != $get_gym_site[0]['type_id']) {
+                                $gym_list[$i]['type_id'] = 8;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            $result['gym_list'] = $gym_list;
+            $this->ret($result);
+        } elseif ($admin_weight == 2) {
+            // 如果是商家BOSS
+            $u_id = session('u_id');
+            $gym_list = $db_gym
+                ->join('user on gym.founder = user.u_id', 'LEFT')
+                ->join('city on city.city_id = gym.city_id', 'LEFT')
+                ->field([
+                    'gym_id',
+                    'gym_name',
+                    'star',
+                    'cover',
+                    'contact_info',
+                    'user.phone_number' => 'founder',
+                    'gym.city_id',
+                    'city.city_name',
+                    'detail_address',
+                    'detail_msg',
+                ])
+                ->where(['gym.founder' => $u_id]);
+            if (!empty($city_id)) {
+                $gym_list = $gym_list->where(['gym.city' => $city_id]);
+            }
+            $gym_list = $gym_list->select();
+            for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
+                // 判断其type_id
+                $get_gym_site = $db_gym->table('gym_site')->field('type_id')->where(['gym_id' => $gym_list[$i]['gym_id']])->select();
+                $num = count($get_gym_site);
+                if ($num == 0) {
+                    $gym_list[$i]['type_id'] = 9;
+                } else {
+                    $gym_list[$i]['type_id'] = $get_gym_site[0]['type_id'];
+                    if ($num > 1) {
+                        for ($j = 1; $j < $num; $j++) {
+                            if ($get_gym_site[$j]['type_id'] != $get_gym_site[0]['type_id']) {
+                                $gym_list[$i]['type_id'] = 8;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (!empty($type_id)) {
+                for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
 
                 }
             }
-        } elseif ($admin_weight == 2) {
-            // 如果是商家BOSS
-            
         } elseif ($admin_weight == 1) {
             // 如果只是商家员工
         }
