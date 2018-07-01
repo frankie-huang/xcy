@@ -285,6 +285,9 @@ function I($name,$default='',$filter=null,$datas=null) {
         	$input =& $_GET;
         	break;
         case 'post'    :   
+            if (empty($_POST)) {
+                $_POST = json_decode(file_get_contents('php://input'), true);
+            }
         	$input =& $_POST;
         	break;
         case 'put'     :   
