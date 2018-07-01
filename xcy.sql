@@ -147,7 +147,7 @@ CREATE TABLE `gym_role` (
 
 -- 场馆下管理员账号
 CREATE TABLE `gym_admin` (
-    `gym_admin_id` int(10) COMMENT "管理员账号ID",
+    `gym_admin_id` int(10) PRIMARY KEY AUTO_INCREMENT COMMENT "管理员账号ID",
     `role_id` int(10) COMMENT "角色ID",
     `account` varchar(200) COMMENT "管理员账号名",
     `password` varchar(256) COMMENT "账号密码",
