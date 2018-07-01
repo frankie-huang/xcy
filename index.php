@@ -11,7 +11,6 @@
 
 // 应用入口文件
 
-header('Access-Control-Allow-Origin: http://127.0.0.1');
 header('Access-Control-Allow-Credentials: true');
 // 响应头设置
 header('Access-Control-Allow-Headers: Content-Type');
