@@ -176,19 +176,39 @@ class IndexController extends Controller {
      */
     public function get_hot_gym() {
         $city_id = I('get.city_id');
-        $gym_list = M('gym')
+        $db_gym = M('gym');
+        $gym_list = $db_gym
             ->join('city on city.city_id = gym.city_id', 'LEFT')
             ->field([
                 'gym_id',
                 'gym_name',
                 'star',
                 'cover',
-                'type_id',
                 'concat(city.city_name, gym.detail_address)' => 'address'
             ])
             ->where(['gym.city_id' => $city_id])
             ->order('star desc')
             ->select();
+
+        for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
+            $gym_list[$i]['key'] = $i;
+            // 判断其type_id
+            $get_gym_site = $db_gym->table('gym_site')->field('type_id')->where(['gym_id' => $gym_list[$i]['gym_id']])->select();
+            $num = count($get_gym_site);
+            if ($num == 0) {
+                $gym_list[$i]['type_id'] = 9;
+            } else {
+                $gym_list[$i]['type_id'] = $get_gym_site[0]['type_id'];
+                if ($num > 1) {
+                    for ($j = 1; $j < $num; $j++) {
+                        if ($get_gym_site[$j]['type_id'] != $get_gym_site[0]['type_id']) {
+                            $gym_list[$i]['type_id'] = 8;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
         if ($gym_list === false) {
             $this->ret($result, 0, '数据库查询出错');
         } else {
@@ -201,13 +221,19 @@ class IndexController extends Controller {
      * 获取对应运动类型的场馆信息列表
      * 参考get_hot_gym来实现
      */
-    public function get_type_gym($city_id,$type_id = '8',$sort_type = '0') {
-        if(empty(I('get.type_id')!==true)){
+    // $city_id,$type_id = '8',$sort_type = '0'
+    public function get_type_gym() {
+        if(!empty(I('get.type_id'))){
             $type_id = I('get.type_id');
+        } else {
+            $type_id = 100;
         }
-        if(empty(I('get.sort_type')!==true)){
+        if(!empty(I('get.sort_type'))){
             $sort_type = I('get.sort_type');
         }
+        $db_gym = M('gym');
+        $city_id = I('get.city_id');
+
         $gym_list = M('gym')
             ->join('city on city.city_id = gym.city_id', 'LEFT')
             ->field([
@@ -215,7 +241,6 @@ class IndexController extends Controller {
                 'gym_name',
                 'star',
                 'cover',
-                'type_id',
                 'concat(city.city_name, gym.detail_address)' => 'address'
             ])
             ->where([
@@ -223,87 +248,85 @@ class IndexController extends Controller {
             ]);
 
             //type_id 默认值是8， type_id等于8时， 返回所有场馆
-            if($type_id != 8){
-                $gym_list = $gym_list->where([
-                    'gym.type_id' => $type_id
-                ]);
-            }
+            // if($type_id != 8){
+            //     $gym_list = $gym_list->where([
+            //         'gym.type_id' => $type_id
+            //     ]);
+            // }
             if($sort_type == 1){
                 $gym_list = $gym_list->order('star desc')->select();
             } else {
                 $gym_list = $gym_list->select();
             }
-            if ($gym_list === false) {
+
+
+
+
+            for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
+                // $gym_list[$i]['key'] = $i;
+                // 判断其type_id
+                $get_gym_site = $db_gym->table('gym_site')->field('type_id')->where(['gym_id' => $gym_list[$i]['gym_id']])->select();
+                $num = count($get_gym_site);
+                if ($num == 0) {
+                    $gym_list[$i]['type_id'] = 9;
+                } else {
+                    $gym_list[$i]['type_id'] = $get_gym_site[0]['type_id'];
+                    if ($num > 1) {
+                        for ($j = 1; $j < $num; $j++) {
+                            if ($get_gym_site[$j]['type_id'] != $get_gym_site[0]['type_id']) {
+                                $gym_list[$i]['type_id'] = 8;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            if($type_id == 100){
+                $gym_list1 = $gym_list;
+            } else {
+                for ($i = 0, $len = count($gym_list); $i < $len; $i++){
+                    if($gym_list[$i]['type_id']==$type_id){
+                        $gym_list1.push($gym_list[$i]);
+                    }
+                }
+            }
+
+
+
+            if ($gym_list1 === false) {
                 $this->ret($result, 0, '数据库查询出错');
             } else {
-                $result['gym_list'] = $gym_list;
+                $result['gym_list'] = $gym_list1;
                 $this->ret($result);
             }
 
     }
 
     /**
-     * 获取我订过的场馆信息列表  
+     * 获取我订过的场馆信息列表   未完成
      */
     public function get_my_historical_gym() {
         // 读取session里面的u_id，用作查询数据表的筛选条件
         $u_id = 1;
-        // 请继续实现代码
-        // $gym_list = M('gym')
-        //     ->join('gym_site on gym_site.gym_id = gym.gym_id','LEFT')
-        //     ->join('book_order on book_order.gym_site_id = gym_site.gym_site_id','LEFT')
-        //     ->join('city on city.city_id = gym.city_id', 'LEFT')
-            // ->field([
-            //     'gym_id',
-            //     'u_id',
-            //     'gym_name',
-            //     'star',
-            //     'cover',
-            //     'type_id',
-            //     'concat(city.city_name, gym.detail_address)' => 'address'
-            // ])
-        //     ->where(['book_order.u_id' => $u_id])
-        //     ->select();
-        //     if ($gym_list === false) {
-        //         $this->ret($result, 0, '数据库查询出错');
-        //     } else {
-        //         $result['gym_list'] = $gym_list;
-        //         $this->ret($result);
-        //     }
-        // $gym_list = M('gym')
-        //     ->join('gym_site on gym_site.gym_id = gym.gym_id','LEFT')
-        //     ->join('book_order on book_order.gym_site_id = gym_site.gym_site_id','LEFT')
-        //     ->join('city on city.city_id = gym.city_id', 'LEFT')
-        //     ->field([
-        //         'gym.gym_id',
-        //         'u_id',
-        //         'gym_name',
-        //         'star',
-        //         'cover',
-        //         'type_id',
-        //         'concat(city.city_name, gym.detail_address)' => 'address'
-        //     ])
-        //     ->where(['book_order.u_id' => $u_id])
-        //     ->select();
-
-
-
         $gym_list = M('book_order')
-            ->join('gym_site on gym_site.gym_site_id = book_order.gym_site_id','LEFT')
-            ->join('gym on gym.gym_id = gym_site.gym_id')
+            ->join('order_site on order_site.order_id = book_order.order_id','LEFT')
+            ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.order_id','LEFT')
+            ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id','LEFT')
+            ->join('gym on gym.gym_id = gym_site.gym_id','LEFT')
             ->join('city on city.city_id = gym.city_id','LEFT')
             ->field([
                 'gym.gym_id',
-                'u_id',
                 'gym_name',
                 'star',
                 'cover',
-                'type_id',
                 'concat(city.city_name, gym.detail_address)' => 'address'
             ])
-            ->group('gym.gym_id')
             ->where(['book_order.u_id' => $u_id])
+            ->group('gym.gym_id')
             ->select();
+        
 
 
         if ($gym_list === false) {
@@ -327,24 +350,40 @@ class IndexController extends Controller {
                 'gym_name',
                 'star',
                 'cover',
-                'type_id',
                 'concat(city.city_name, gym.detail_address)' => 'address',
                 'contact_info',
                 'detail_msg'
             ])
             ->where(['gym.gym_id' => $gym_id])
             ->find();
+
+                $get_gym_site = M('gym_site')->field('type_id')->where(['gym_id' => $gym_list['gym_id']])->select();
+                $num = count($get_gym_site);
+                if ($num == 0) {
+                    $gym_list['type_id'] = 9;
+                } else {
+                    $gym_list['type_id'] = $get_gym_site[0]['type_id'];
+                    if ($num > 1) {
+                        for ($j = 1; $j < $num; $j++) {
+                            if ($get_gym_site[$j]['type_id'] != $get_gym_site[0]['type_id']) {
+                                $gym_list['type_id'] = 8;
+                                break;
+                            }
+                        }
+                    }
+                }
+
         if ($gym_list === false) {
             $this->ret($result, 0, '数据库查询出错');
         } else {
-            $result['gym_list'] = $gym_list;
+            $result['detail'] = $gym_list;
             $this->ret($result);
         }
     }
 
     /**
      * 获取一个场馆近五天的场次信息
-     * 未完成，选择5天,剩余数量
+     * 未完成
      */
     public function get_a_gym_site() {
         $gym_id	 = I('get.gym_id');
@@ -363,45 +402,41 @@ class IndexController extends Controller {
      */
     public function reserve_gym() {
         $this->islogin();
-        $gym_site_id = I('post.gym_site_id');
+        $id_list = I('post.id_list');
+        // $id_list = [1,2,3];
+
         $u_id = session('u_id');
         // $u_id = 1;
-        
-
-
-        $gym_book_list = M('book_order')
-            ->where(['book_order.gym_site_id' => $gym_site_id])
-            ->select();
-        
-        $gym_site = M('gym_site')
-            ->where(['gym_site.gym_site_id' => $gym_site_id])
-            ->find();
-            
-        $number = $gym_site['number'];
-
-        $book_number = count($gym_book_list);
-        if($number > $book_number){
-            $time = date('y-m-d H:i:s',time());
-            // echo $time;
-            $data['u_id'] = $u_id;
-            $data['gym_site_id'] = $gym_site_id;
-            $data['success_time'] = $time;
-
-            $book = M('book_order')
-                ->add($data);
-                $this->ret($result);
-        } else {
-            $this->ret($result, 0, '数据库查询出错');
+        $db_gym = M('gym_site_time');
+        $amount = 0;
+        for($i = 0, $len = count($id_list); $i < $len; $i++){
+            $gym_site_time = $db_gym->where(['gym_site_time.gym_site_id' => $id_list[$i]])->find();
+            $amount += $gym_site_time['price'];
         }
+        $time = date('y-m-d H:i:s',time());
+        $data['success_time'] = $time;
+        $data['u_id'] = $u_id;
+        $data['amount'] = $amount;
+        $order_id = M('book_order')->add($data);
+
+        
+        for($i = 0, $len = count($id_list); $i < $len; $i++){
+            $order[$i]['order_id'] = $order_id;
+            $order[$i]['gym_site_time_id'] = $id_list[$i];
+            M('order_site')->add($order[$i]);
+        }
+
+        $this->ret($result);
+
     }
 
     /**
      * 获取消息列表
      */
     public function get_message_list() {
-        // $this->islogin();
-        // $u_id = session('u_id');
-        $u_id = 1;
+        $this->islogin();
+        $u_id = session('u_id');
+        // $u_id = 1;
         $is_read = I('get.is_read');
         $message_list = M('message')
             ->field([
@@ -412,7 +447,8 @@ class IndexController extends Controller {
                 'time'
             ])
             ->where(['u_id' => $u_id]);
-        if($is_read == 0 || $is_read == 1){
+            // $is_read == 0 || $is_read == 1
+        if($is_read == '0' || $is_read == '1'){
             $message_list = $message_list
                 ->where(['message.is_read' => $is_read])
                 ->select();
@@ -461,11 +497,14 @@ class IndexController extends Controller {
      * 获取我的订单列表
      */
     public function get_order_list() {
-        $date1 = date('y-m-d H:i:s',time());
-        $date2 = date('y-m-d H:i:s',time());
-        echo strtotime($date1);
-        echo "     ";
-        echo strtotime("+1 day");
+        // $date1 = date('y-m-d H:i:s',time());
+        // $date2 = date('y-m-d H:i:s',time());
+        // echo strtotime($date1);
+        // echo "     ";
+        // echo strtotime("+1 day");
+
+        // $u_id = 1;
+        // $order_list = 
     }
 
     /**
