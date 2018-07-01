@@ -260,6 +260,34 @@ class AdminController extends Controller {
     }
 
     /**
+     * 添加场馆
+     */
+    public function add_gym() {
+        $admin_weight = session('admin_weight');
+        if (empty($admin_weight) || $admin_weight <= 1) {
+            $this->ret($result, 0, '无权限进行操作');
+        }
+
+        $db_gym = M('gym');
+        $data = [
+            'gym_name' => I('post.gym_name'),
+            'cover' => I('post.cover'),
+            'contact_info' => I('post.contact_info'),
+            'city_id' => I('post.city_id'),
+            'detail_address' => I('post.detail_address'),
+            'detail_msg' => I('post.detail_msg'),
+        ];
+        $last_id = $db_gym->add($data);
+        if (!is_numeric($last_id)) {
+            $this->ret($result, 0, '数据库插入出错');
+        } else {
+            $result['gym_id'] = $last_id;
+            $result['register_time'] = ($db_gym->field('register_time')->where(['gym_id' => $last_id])->find())['register_time'];
+            $this->ret($result);
+        }
+    }
+
+    /**
      * 添加管理员账号
      */
     public function add_gym_admin() {
