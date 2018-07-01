@@ -39,6 +39,7 @@ CREATE TABLE `gym` (
     `contact_info` varchar(50) DEFAULT NULL COMMENT "场馆联系方式",
     `detail_msg` text DEFAULT NULL COMMENT "场馆详细介绍",
     `register_time` datetime DEFAULT now() COMMENT "场馆注册时间",
+    `is_delete` ENUM('0', '1') DEFAULT 0 COMMENT "是否被删除，默认0，即没有被删除",
     FOREIGN KEY (`founder`) REFERENCES `user` (`u_id`) ON DELETE CASCADE,
     FOREIGN KEY (`city_id`) REFERENCES `city` (`city_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

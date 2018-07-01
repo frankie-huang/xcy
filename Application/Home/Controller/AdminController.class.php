@@ -407,10 +407,10 @@ class AdminController extends Controller {
      * @param int $u_id 用户id
      * @param int $admin_weight 权限权重，0、1、2、10
      * @param int $gym_id 场馆id
-     * @param int $operation_id 操作id
+     * @param int $operation_id 操作id，当场馆管理员一定无的权限时传入0
      * @return boolean
      */
-    private function can_do($u_id, $admin_weight, $gym_id, $operation_id) {
+    private function can_do($u_id, $admin_weight, $gym_id, $operation_id = 0) {
         $db = M();
         if ($admin_weight < 10) {
             if ($admin_weight == 1) {
