@@ -288,6 +288,68 @@ class AdminController extends Controller {
     }
 
     /**
+     * 添加场馆角色
+     */
+    public function add_gym_role() {
+        $u_id = session('u_id');
+        $admin_weight = session('admin_weight');
+        $gym_id = I('post.gym_id');
+        $role_name = I('post.name');
+        $operation_list = I('post.operation_list');
+        if (empty($u_id)) {
+            $this->ret($result, -1, '未登录');
+        }
+        if ($admin_weight < 1) {
+            $this->ret($result, 0, '无权限');
+        }
+        $db_role = M('gym_role');
+        if ($admin_weight < 10) {
+            $get_gym = $db_role->table('gym')->field('founder')->where(['gym_id' => $gym_id])->find();
+            if (empty($get_gym)) {
+                $this->ret($result, 0, '数据库查询不到对应场馆信息');
+            }
+            if ($admin_weight == 1) {
+                // 商家管理员
+                $get_gym_admin = $db_role->table('gym_admin')->field('role_id')->where(['gym_admin_id' => $u_id])->find();
+                $get_gym_role = $db_role->field('gym_id, operation_list')->where(['role_id' => $get_gym_admin['role_id']])->find();
+                $your_operation_list = explode('|', $get_gym_role['operation_list']);
+                if (!in_array('1', $your_operation_list)) {
+                    $this->ret($result, 0, '无权限添加场馆角色');
+                }
+                if ($gym_id != $get_gym_role['gym_id']) {
+                    $this->ret($result, 0, '无权限添加其他场馆的角色');
+                }
+            } else {
+                // 商家BOSS，判断场馆是否其创建
+                if ($get_gym['founder'] != $u_id) {
+                    $this->ret($result, 0, '无权限添加其他场馆的角色');
+                }
+            }
+        }
+        
+        // 检验$operation_list里面是否有非法的id
+        $true_operation_list = $db_role->table('gym_operation')->field('operation_id')->select();
+        $true_operation_list_array = [];
+        for ($i = 0, $len = count($true_operation_list); $i < $len; $i++) {
+            $true_operation_list_array[] = $true_operation_list[$i]['operation_id'];
+        }
+        for ($i = 0, $len = count($operation_list); $i < $len; $i++) {
+            if (!in_array($operation_list[$i], $true_operation_list_array)) {
+                $this->ret($result, 0, '权限列表有数据库中不存在的操作id');
+            }
+        }
+
+        $data = [
+            'gym_id' => $gym_id,
+            'name' => $role_name,
+            'operation_list' => implode('|', $operation_list),
+        ];
+        $get_id = $db_role->add($data);
+        $result['role_id'] = $get_id;
+        $this->ret($result);
+    }
+
+    /**
      * 添加管理员账号
      */
     public function add_gym_admin() {
@@ -310,12 +372,12 @@ class AdminController extends Controller {
             if ($admin_weight == 1) {
                 // 商家管理员
                 $get_gym_admin = $db_admin->field('role_id')->where(['gym_admin_id' => $u_id])->find();
-                $get_role_operation = $db_admin->table('gym_role')->field('operation_list')->where(['role_id' => $get_gym_admin['role_id']])->find();
-                $operation_list = explode('|', $get_role_operation['operation_list']);
+                $get_gym_role = $db_admin->table('gym_role')->field('gym_id, operation_list')->where(['role_id' => $get_gym_admin['role_id']])->find();
+                $operation_list = explode('|', $get_gym_role['operation_list']);
                 if (!in_array('1', $operation_list)) {
                     $this->ret($result, 0, '无权限添加管理员');
                 }
-                if ($get_gym_id['gym_id'] != ($db_admin->table('gym_role')->field('gym_id')->where(['role_id' => $get_gym_admin['role_id']])->find())['gym_id']) {
+                if ($get_gym_id['gym_id'] != $get_gym_role['gym_id']) {
                     $this->ret($result, 0, '无权限添加其他场馆的管理员');
                 }
             } else {
