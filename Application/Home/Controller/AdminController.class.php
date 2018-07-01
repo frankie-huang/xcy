@@ -120,7 +120,7 @@ class AdminController extends Controller {
                     'detail_address',
                     'detail_msg',
                 ])
-                ->where(['is_delete' => 0])
+                ->where(['is_delete' => '0'])
                 ->select();
             for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
                 $gym_list[$i]['key'] = $i;
@@ -159,7 +159,7 @@ class AdminController extends Controller {
                     'detail_address',
                     'detail_msg',
                 ])
-                ->where(['is_delete' => 0])
+                ->where(['is_delete' => '0'])
                 ->where(['gym.founder' => $u_id]);
             if (!empty($city_id)) {
                 $gym_list = $gym_list->where(['gym.city' => $city_id]);
@@ -220,7 +220,7 @@ class AdminController extends Controller {
                     'detail_address',
                     'detail_msg',
                 ])
-                ->where(['is_delete' => 0])
+                ->where(['is_delete' => '0'])
                 ->where(['gym.gym_id' => $get_gym_id['gym_id']]);
             if (!empty($city_id)) {
                 $gym_list = $gym_list->where(['gym.city' => $city_id]);
@@ -342,7 +342,7 @@ class AdminController extends Controller {
             $this->ret($result, 0, '无权限进行操作');
         }
 
-        M('gym')->where(['gym_id' => $gym_id])->setField('is_delete', 1);
+        M('gym')->where(['gym_id' => $gym_id])->setField('is_delete', '1');
         $this->ret($result);
     }
 
