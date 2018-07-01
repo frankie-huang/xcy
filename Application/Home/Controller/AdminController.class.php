@@ -275,7 +275,7 @@ class AdminController extends Controller {
         }
         $db_admin = M('gym_admin');
         if ($admin_weight < 10) {
-            $get_gym_id = $db_admin->table('gym_role')->field('gym_id')->where(['role_id' => $role_id])->find();
+            $get_gym_id = $db_admin->table('gym_role')->field('gym_id, founder')->where(['role_id' => $role_id])->find();
             if (empty($get_gym_id)) {
                 $this->ret($result, 0, '数据库查询不到对应角色');
             }
@@ -291,11 +291,22 @@ class AdminController extends Controller {
                     $this->ret($result, 0, '无权限添加其他场馆的管理员');
                 }
             } else {
-                // 商家BOSS，判断场馆($get_gym_id['gym_id'])是否其创建
-
+                // 商家BOSS，判断场馆是否其创建
+                if ($get_gym_id['founder'] != $u_id) {
+                    $this->ret($result, 0, '无权限添加其他场馆的管理员');
+                }
             }
-            // $get_gym = $db_admin->table('gym')
         }
+        $data = [
+            'role_id' => $role_id,
+            'password' => password_hash($password, PASSWORD_BCRYPT),
+        ];
+        $get_id = $db_admin->add($data);
+        $account = $this->generate_string(4) . $get_id;
+        $db_admin->where(['gym_admin_id' => $get_id])->save(['account' => $account]);
+        $result['gym_admin_id'] = $get_id;
+        $result['account'] = $account;
+        $this->ret($result);
     }
 
     /**
