@@ -286,6 +286,46 @@ class AdminController extends Controller {
             $this->ret($result);
         }
     }
+    
+    /**
+     * 更新场馆信息
+     */
+    public function update_gym() {
+        $admin_weight = session('admin_weight');
+        $u_id = session('u_id');
+        $post = I('post.');
+        $gym_id = $post['gym_id'];
+
+        if (!$this->can_do($u_id, $admin_weight, $gym_id, 2)) {
+            $this->ret($result, 0, '无权限进行操作');
+        }
+
+        $update_data = [];
+        if (isset($post['gym_name'])) {
+            $update_data['gym_name'] = $post['gym_name'];
+        }
+        if (isset($post['cover'])) {
+            $update_data['cover'] = $post['cover'];
+        }
+        if (isset($post['contact_info'])) {
+            $update_data['contact_info'] = $post['contact_info'];
+        }
+        if (isset($post['city_id'])) {
+            $update_data['city_id'] = $post['city_id'];
+        }
+        if (isset($post['detail_address'])) {
+            $update_data['detail_address'] = $post['detail_address'];
+        }
+        if (isset($post['detail_msg'])) {
+            $update_data['detail_msg'] = $post['detail_msg'];
+        }
+        if (empty($update_data)) {
+            $this->ret($result, 1, '无需要更新的数据');
+        }
+
+        M('gym')->where(['gym_id' => $gym_id])->save($update_data);
+        $this->ret($result);
+    }
 
     /**
      * 添加场馆角色
