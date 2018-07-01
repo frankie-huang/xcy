@@ -120,6 +120,7 @@ class AdminController extends Controller {
                     'detail_address',
                     'detail_msg',
                 ])
+                ->where(['is_delete' => 0])
                 ->select();
             for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
                 $gym_list[$i]['key'] = $i;
@@ -158,6 +159,7 @@ class AdminController extends Controller {
                     'detail_address',
                     'detail_msg',
                 ])
+                ->where(['is_delete' => 0])
                 ->where(['gym.founder' => $u_id]);
             if (!empty($city_id)) {
                 $gym_list = $gym_list->where(['gym.city' => $city_id]);
@@ -218,6 +220,7 @@ class AdminController extends Controller {
                     'detail_address',
                     'detail_msg',
                 ])
+                ->where(['is_delete' => 0])
                 ->where(['gym.gym_id' => $get_gym_id['gym_id']]);
             if (!empty($city_id)) {
                 $gym_list = $gym_list->where(['gym.city' => $city_id]);
@@ -324,6 +327,22 @@ class AdminController extends Controller {
         }
 
         M('gym')->where(['gym_id' => $gym_id])->save($update_data);
+        $this->ret($result);
+    }
+    
+    /**
+     * 删除场馆
+     */
+    public function delete_gym(){
+        $u_id = session('u_id');
+        $admin_weight = session('admin_weight');
+        $gym_id = I('post.gym_id');
+
+        if (!$this->can_do($u_id, $admin_weight, $gym_id)) {
+            $this->ret($result, 0, '无权限进行操作');
+        }
+
+        M('gym')->where(['gym_id' => $gym_id])->setField('is_delete', 1);
         $this->ret($result);
     }
 
