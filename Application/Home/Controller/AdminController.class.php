@@ -314,7 +314,7 @@ class AdminController extends Controller {
      */
     private function generate_string($length = 4) {  
         // 密码字符集，可任意添加你需要的字符
-        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $chars = 'abcdefghijklmnopqrstuvwxyz1234567890';
         $string = '';
         for ($i = 0; $i < $length; $i++) {
             $string .= $chars[mt_rand(0, strlen($chars) - 1)];
