@@ -11,7 +11,7 @@ CREATE TABLE `user` (
     `password` varchar(256) NOT NULL COMMENT "密码",
     `avatar_url` text DEFAULT NULL COMMENT "用户头像地址", 
     `gender` ENUM('0','1') NOT NULL COMMENT "性别，0表示女，1表示男",
-    `balance` DECIMAL(10, 2) DEFAULT 0 COMMENT "余额",
+    `balance` DECIMAL(10, 2) DEFAULT 100 COMMENT "余额",
     `admin_weight` int(2) DEFAULT 0 COMMENT "管理员权重，0表示普通用户，1表示商家员工，2表示商家BOSS，10表示超级管理员",
     UNIQUE KEY unique_phone(`phone_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
