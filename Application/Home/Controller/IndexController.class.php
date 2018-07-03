@@ -738,16 +738,20 @@ class IndexController extends Controller {
         $gym_comment_list = M('comment')
             ->join('user on user.u_id = comment.u_id','LEFT')
             ->join('book_order on book_order.order_id = comment.order_id','LEFT')
-            ->join('gym_site on gym_site.gym_site_id = book_order.gym_site_id','LEFT')
+            ->join('order_site on order_site.order_id = book_order.order_id','LEFT')
+            ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
+            ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id','LEFT')
+            ->join('gym on gym.gym_id = gym_site.gym_id','LEFT')
             ->field([
                 'user.u_id',
                 'user.phone_number',
                 'user.avatar_url',
-                'star',
+                'comment.star',
                 'content',
                 'comment_time'
             ])
             ->where(['gym_site.gym_id' => $gym_id])
+            ->group('comment.comment_id')
             ->select();
             
 
