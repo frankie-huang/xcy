@@ -150,6 +150,7 @@ CREATE TABLE `gym_role` (
 CREATE TABLE `gym_admin` (
     `gym_admin_id` int(10) PRIMARY KEY AUTO_INCREMENT COMMENT "管理员账号ID",
     `role_id` int(10) COMMENT "角色ID",
+    `name` varchar(200) NOT NULL COMMENT "管理员名称",
     `account` varchar(200) COMMENT "管理员账号名",
     `password` varchar(256) COMMENT "账号密码",
     FOREIGN KEY (`role_id`) REFERENCES `gym_role` (`role_id`) ON DELETE CASCADE

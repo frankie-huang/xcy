@@ -397,12 +397,19 @@ class AdminController extends Controller {
         $u_id = session('u_id');
         $admin_weight = session('admin_weight');
         $role_id = I('post.role_id');
+        $name = I('post.name');
         $password = I('post.password');
         if (empty($u_id)) {
             $this->ret($result, -1, '未登录');
         }
         if ($admin_weight < 1) {
             $this->ret($result, 0, '无权限');
+        }
+        if (empty($name)) {
+            $this->ret($result, 0, '名称不能为空');
+        }
+        if (empty($password)) {
+            $this->ret($result, 0, '密码不能为空');
         }
         $db_admin = M('gym_admin');
         $get_gym_id = $db_admin->table('gym_role')->field('gym_id')->where(['role_id' => $role_id])->find();
@@ -411,6 +418,7 @@ class AdminController extends Controller {
         }
         $data = [
             'role_id' => $role_id,
+            'name' => $name,
             'password' => password_hash($password, PASSWORD_BCRYPT),
         ];
         $get_id = $db_admin->add($data);
