@@ -768,6 +768,7 @@ class IndexController extends Controller {
      * 上传图片
      */
     public function upload_picture() {
+        header('Access-Control-Allow-Headers: Content-Type, authorization, x-requested-with');
         $upload = new \Think\Upload(); // 实例化上传类
         $upload->maxSize = 0 ; // 设置附件上传大小
         $upload->exts = array('jpg', 'gif', 'png', 'jpeg'); // 设置附件上传类型
