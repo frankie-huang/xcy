@@ -458,7 +458,6 @@ class IndexController extends Controller {
      * 订场
      */
     public function reserve_gym() {
-        $this->islogin();
         $id_list = I('post.id_list');
         // $id_list = [1,2,3];
 
@@ -491,7 +490,6 @@ class IndexController extends Controller {
      * 获取消息列表
      */
     public function get_message_list() {
-        $this->islogin();
         $u_id = session('u_id');
         // $u_id = 1;
         $is_read = I('get.is_read');
@@ -524,7 +522,6 @@ class IndexController extends Controller {
      * 阅读消息
      */
     public function read_message() {
-        $this->islogin();
         $message_id = I('get.message_id');
         $message_detail = M('message')
             ->field([
@@ -684,7 +681,6 @@ class IndexController extends Controller {
      * 申请成为商家
      */
     public function to_be_merchant() {
-        $this->islogin();
         $u_id = session('u_id');
         $data['u_id'] = $u_id;
         $data['apply_time'] = date('y-m-d H:i:s',time());
@@ -745,6 +741,7 @@ class IndexController extends Controller {
             ->field([
                 'user.u_id',
                 'user.phone_number',
+                'user.nick',
                 'user.avatar_url',
                 'comment.star',
                 'content',
