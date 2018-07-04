@@ -266,6 +266,7 @@ class AdminController extends Controller {
      * 添加场馆
      */
     public function add_gym() {
+        $u_id = session('u_id');
         $admin_weight = session('admin_weight');
         if (empty($admin_weight) || $admin_weight <= 1) {
             $this->ret($result, 0, '无权限进行操作');
@@ -274,6 +275,7 @@ class AdminController extends Controller {
         $db_gym = M('gym');
         $data = [
             'gym_name' => I('post.gym_name'),
+            'founder' => $u_id,
             'cover' => I('post.cover'),
             'contact_info' => I('post.contact_info'),
             'city_id' => I('post.city_id'),
