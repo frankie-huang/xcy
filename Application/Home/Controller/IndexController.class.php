@@ -314,9 +314,9 @@ class IndexController extends Controller {
     public function get_my_historical_gym() {
         // 读取session里面的u_id，用作查询数据表的筛选条件
         $u_id = session('u_id');
-        if ($u_id == null) {
-            $this->ret($result, -1, '未登录');
-        }
+        // if ($u_id == null) {
+        //     $this->ret($result, -1, '未登录');
+        // }
         $gym_list = M('book_order')
             ->join('order_site on order_site.order_id = book_order.order_id','LEFT')
             ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
@@ -468,9 +468,9 @@ class IndexController extends Controller {
         // $id_list = [1,2,3];
 
         $u_id = session('u_id');
-        if ($u_id == null) {
-            $this->ret($result, -1, '未登录');
-        }
+        // if ($u_id == null) {
+        //     $this->ret($result, -1, '未登录');
+        // }
         // $u_id =1;
         $db_gym = M('gym_site_time');
         $amount = 0;
@@ -599,9 +599,9 @@ class IndexController extends Controller {
         // $order_list = 
 
         $u_id = session('u_id');
-        if ($u_id == null) {
-            $this->ret($result, -1, '未登录');
-        }
+        // if ($u_id == null) {
+        //     $this->ret($result, -1, '未登录');
+        // }
         $gym_list = M('book_order')
             ->join('order_site on order_site.order_id = book_order.order_id','LEFT')
             ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
@@ -690,13 +690,13 @@ class IndexController extends Controller {
                 $gym_list[$i]['type_name'] = '未知';break;
             }
         }
-        dump($gym_list);
-        // if ($gym_list === false) {
-        //     $this->ret($result, 0, '数据库查询出错');
-        // } else {
-        //     $result['order_list'] = $gym_list;
-        //     $this->ret($result);
-        // }
+        // dump($gym_list);
+        if ($gym_list === false) {
+            $this->ret($result, 0, '数据库查询出错');
+        } else {
+            $result['order_list'] = $gym_list;
+            $this->ret($result);
+        }
         
     }
 
@@ -792,9 +792,9 @@ class IndexController extends Controller {
      */
     public function to_be_merchant() {
         $u_id = session('u_id');
-        if ($u_id == null) {
-            $this->ret($result, -1, '未登录');
-        }
+        // if ($u_id == null) {
+        //     $this->ret($result, -1, '未登录');
+        // }
         $data['u_id'] = $u_id;
         $data['apply_time'] = date('y-m-d H:i:s',time());
         $data['status'] = 0;
@@ -815,9 +815,9 @@ class IndexController extends Controller {
      */
     public function comment_order() {
         $u_id = session('u_id');
-        if ($u_id == null) {
-            $this->ret($result, -1, '未登录');
-        }
+        // if ($u_id == null) {
+        //     $this->ret($result, -1, '未登录');
+        // }
         // $u_id = 1;
         $order_id = I('post.order_id');
         $star = I('post.star');
@@ -910,9 +910,9 @@ class IndexController extends Controller {
      */
     public function recharge(){
         $u_id = session('u_id');
-        if ($u_id == null) {
-            $this->ret($result, -1, '未登录');
-        }
+        // if ($u_id == null) {
+        //     $this->ret($result, -1, '未登录');
+        // }
         $number = I('get.number');
 
 
