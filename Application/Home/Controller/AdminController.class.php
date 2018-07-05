@@ -524,6 +524,44 @@ class AdminController extends Controller {
     }
 
     /**
+     * 更新场馆场地的场次信息
+     */
+    public function update_gym_site_time()
+    {
+        $admin_weight = session('admin_weight');
+        $u_id = session('u_id');
+        $post = I('post.');
+        $gym_site_time_id = $post['gym_site_time_id'];
+
+        $db = M();
+        $get_gym_site = $db->table('gym_site_time')->field('gym_site_id')->where(['gym_site_time_id' => $gym_site_time_id])->find();
+        $get_gym_id = $db->table('gym_site')->field('gym_id')->where(['gym_site_id' => $get_gym_site['gym_site_id']])->find();
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 5)) {
+            $this->ret($result, 0, '无权限进行操作');
+        }
+
+        $update_data = [];
+        if (isset($post['price'])) {
+            $update_data['price'] = $post['price'];
+        }
+        if (isset($post['date'])) {
+            $update_data['date'] = $post['date'];
+        }
+        if (isset($post['start_time'])) {
+            $update_data['start_time'] = $post['start_time'];
+        }
+        if (isset($post['end_time'])) {
+            $update_data['end_time'] = $post['end_time'];
+        }
+        if (empty($update_data)) {
+            $this->ret($result, 1, '无需要更新的数据');
+        }
+
+        $db->table('gym_site_time')->where(['gym_site_time_id' => $gym_site_time_id])->save($update_data);
+        $this->ret($result);
+    }
+
+    /**
      * 删除场馆场地的场次信息
      */
     public function delete_gym_site_time()
