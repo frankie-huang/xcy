@@ -136,8 +136,11 @@ class AdminController extends Controller {
                     'detail_address',
                     'detail_msg',
                 ])
-                ->where(['is_delete' => '0'])
-                ->select();
+                ->where(['is_delete' => '0']);
+            if (!empty($city_id)) {
+                $gym_list = $gym_list->where(['gym.city' => $city_id]);
+            }
+            $gym_list = $gym_list->select();
             for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
                 $gym_list[$i]['key'] = $i;
                 // 判断其type_id
@@ -156,6 +159,17 @@ class AdminController extends Controller {
                         }
                     }
                 }
+            }
+            if (!empty($type_id)) {
+                for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
+                    if ($gym_list[$i]['type_id'] != $type_id) {
+                        unset($gym_list[$i]);
+                    }
+                }
+                $gym_list = array_values($gym_list);
+            }
+            for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
+                $gym_list[$i]['key'] = $i;
             }
         } elseif ($admin_weight == 2) {
             // 如果是商家BOSS
