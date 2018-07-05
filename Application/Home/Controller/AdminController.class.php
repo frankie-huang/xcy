@@ -160,7 +160,7 @@ class AdminController extends Controller {
                     }
                 }
             }
-            if (!empty($type_id)) {
+            if ($type_id == '0' || !empty($type_id)) {
                 for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
                     if ($gym_list[$i]['type_id'] != $type_id) {
                         unset($gym_list[$i]);
@@ -213,7 +213,7 @@ class AdminController extends Controller {
                     }
                 }
             }
-            if (!empty($type_id)) {
+            if ($type_id == '0' || !empty($type_id)) {
                 for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
                     if ($gym_list[$i]['type_id'] != $type_id) {
                         unset($gym_list[$i]);
@@ -274,7 +274,7 @@ class AdminController extends Controller {
                     }
                 }
             }
-            if (!empty($type_id)) {
+            if ($type_id == '0' || !empty($type_id)) {
                 for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
                     if ($gym_list[$i]['type_id'] != $type_id) {
                         unset($gym_list[$i]);
