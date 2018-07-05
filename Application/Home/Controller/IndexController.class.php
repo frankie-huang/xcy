@@ -468,13 +468,27 @@ class IndexController extends Controller {
         if ($u_id == null) {
             $this->ret($result, -1, '未登录');
         }
-        // $u_id =3;
+        // $u_id =1;
         $db_gym = M('gym_site_time');
         $amount = 0;
         for($i = 0, $len = count($id_list); $i < $len; $i++){
             $gym_site_time = $db_gym->where(['gym_site_time.gym_site_id' => $id_list[$i]])->find();
             $amount += $gym_site_time['price'];
         }
+
+        // 判断是否有余量
+        for($i = 0, $len = count($id_list); $i < $len; $i++){
+            $order_site_count = count(M('order_site')->where(['order_site.gym_site_time_id' => $id_list[$i]])->select());
+            // dump($order_site_count);
+            $gym_site = M('gym_site_time')->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id','LEFT')->find();
+            $gym_site_number = $gym_site['number'];
+            // dump($gym_site_number);
+            if((int)$gym_site_number - $order_site_count <1){
+                $this->ret($result, 0, '没有余量');
+            }
+        }
+
+
 
         $user = M('user')->where(['user.u_id' => $u_id])->find();
         if((int)$user['balance']-(int)$amount<0){
@@ -596,6 +610,7 @@ class IndexController extends Controller {
                 'book_order.amount'=>'price',
                 'book_order.success_time'=>'time'
             ])
+            ->group('book_order.order_id')
             ->where(['book_order.u_id'=>$u_id])
             ->select();
 
@@ -619,7 +634,34 @@ class IndexController extends Controller {
             }
         }
         for ($i = 0, $len = count($gym_list); $i < $len; $i++){
-            $gym_list[$i]['is_over'] = 0;
+
+            $order_id = $gym_list[$i]['order_id'];
+            $gym_site_time = M('gym_site_time')
+            ->join('order_site on order_site.gym_site_time_id = gym_site_time.gym_site_time_id','LEFT')
+            ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id')
+            ->where(['order_site.order_id' => $order_id])
+            ->field([
+                'gym_site_time.date',
+                'gym_site.name',
+                'gym_site_time.price',
+                'gym_site.type_id',
+                'gym_site_time.start_time',
+                'gym_site_time.end_time'
+            ])
+            ->select();
+            
+            
+            $is_over = 1;
+            $now = strtotime('now');
+            for ($j = 0, $len2 = count($gym_site_time); $j < $len2; $j++) {
+                $date_time = strtotime($gym_site_time[$j]['date'].' '.$gym_site_time[$j]['end_time']);
+                if($now<$date_time){
+                    $is_over = 0;
+                    break;
+                }
+            }
+            // dump($is_over);
+            $gym_list[$i]['is_over'] = $is_over;
             switch($gym_list[$i]['type_id'])
             {
                 case 0:
@@ -644,12 +686,13 @@ class IndexController extends Controller {
                 $gym_list[$i]['type_name'] = '未知';break;
             }
         }
-        if ($gym_list === false) {
-            $this->ret($result, 0, '数据库查询出错');
-        } else {
-            $result['order_list'] = $gym_list;
-            $this->ret($result);
-        }
+        dump($gym_list);
+        // if ($gym_list === false) {
+        //     $this->ret($result, 0, '数据库查询出错');
+        // } else {
+        //     $result['order_list'] = $gym_list;
+        //     $this->ret($result);
+        // }
         
     }
 
@@ -658,46 +701,86 @@ class IndexController extends Controller {
      * 未完成，缺少字段 type_name time_msg
      */
     public function get_order_detail() {
-        // $order_id = I('get.order_id');
-        // $order_detail = M('book_order')
-        //     ->join('gym_site on gym_site.gym_site_id = book_order.gym_site_id','LEFT')
-        //     ->join('gym on gym.gym_id = gym_site.gym_id','LEFT')
-        //     ->field([
-        //         'order_id',
-        //         'gym.gym_id',
-        //         'gym.gym_name',
-        //         'gym.type_id',
-        //         'gym_site.price',
-        //         'success_time'=>'time'
-        //     ])
-        //     ->where(['book_order.order_id' => $order_id])
-        //     ->select();
-        // if ($order_detail === false) {
-        //     $this->ret($result, 0, '数据库查询出错');
-        // } else {
-        //     $result['detail'] = $order_detail;
-        //     $this->ret($result);
-        // }
+        $order_id = I('get.order_id');
+        $order = M('book_order')
+           ->join('order_site on order_site.order_id = book_order.order_id','LEFT')
+           ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
+           ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id','LEFT')
+           ->join('gym on gym.gym_id = gym_site.gym_id','LEFT')
+           ->field([
+               'book_order.order_id',
+               'gym.gym_id',
+               'gym.gym_name',
+               'book_order.amount'=>'price',
+               'book_order.success_time'=>'time'
+           ])
+           ->where(['book_order.order_id' => $order_id])
+           ->find();
+
+        $gym_site_time = M('gym_site_time')
+            ->join('order_site on order_site.gym_site_time_id = gym_site_time.gym_site_time_id','LEFT')
+            ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id')
+            ->where(['order_site.order_id' => $order_id])
+            ->field([
+                'gym_site_time.date',
+                'gym_site.name',
+                'gym_site_time.price',
+                'gym_site.type_id',
+                'gym_site_time.start_time',
+                'gym_site_time.end_time'
+            ])
+            ->select();
+        
+        $order['type_id'] = $gym_site_time[0]['type_id'];
+        
+        
+        $is_over = 1;
+        $now = strtotime('now');
+        for ($i = 0, $len = count($gym_site_time); $i < $len; $i++) {
+            $date_time = strtotime($gym_site_time[$i]['date'].' '.$gym_site_time[$i]['end_time']);
+            
+            if($now<$date_time){
+                $is_over = 0;
+                break;
+            }
+        }
+        
+        $order['is_over'] = $is_over;
+        $order['gym_site_time'] = $gym_site_time;
+        
+        switch($order['type_id'])
+            {
+                case 0:
+                $order['type_name'] = '羽毛球';break;
+                case 1:
+                $order['type_name'] = '篮球';break;
+                case 2:
+                $order['type_name'] = '足球';break;
+                case 3:
+                $order['type_name'] = '游泳';break;
+                case 4:
+                $order['type_name'] = '健身';break;
+                case 5:
+                $order['type_name'] = '网球';break;
+                case 6:
+                $order['type_name'] = '台球';break;
+                case 7:
+                $order['type_name'] = '其他';break;
+                case 8:
+                $order['type_name'] = '综合';break;
+                case 9:
+                $order['type_name'] = '未知';break;
+            }
+
+            if($order){
+                $result['detail'] = $order;
+                $this->ret($result);
+            } else {
+                $this->ret($result, 0, '出错');
+            }
         
 
-        // $order_id = I('get.order_id');
 
-        // $order_detail = M('book_order')
-        //     ->join('order_site on order_site.order_id = book_order.order_id','LEFT')
-        //     ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
-        //     ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id','LEFT')
-        //     ->join('gym on gym.gym_id = gym_site.gym_id','LEFT')
-        //     ->field([
-        //         'book_order.order_id',
-        //         'gym.gym_id',
-        //         'gym.gym_name',
-        //         'book_order.amount'=>'price',
-        //         'book_order.success_time'=>'time'
-        //     ])
-        //     ->where(['book_order.order_id'=>$order_id])
-        //     ->select();
-
-        // dump($order_detail);
     }
 
     /**
@@ -746,6 +829,35 @@ class IndexController extends Controller {
         $add_comment = M('comment')
             ->add($data);
         
+
+        $gym = M('order_site')
+            ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
+            ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id','LEFT')
+            ->where(['order_site.order_id' => $order_id])
+            ->find();
+        $gym_id = $gym['gym_id'];
+        
+
+
+
+        $comment_list = M('comment')
+            ->join('order_site on order_site.order_id = comment.order_id','LEFT')
+            ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
+            ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id','LEFT')
+            ->where(['gym_site.gym_id' => $gym_id])
+            ->group('comment.comment_id')
+            ->select();
+        
+        $new_star_total = 0;
+        for ($i = 0, $len = count($comment_list); $i < $len; $i++) {
+            $new_star_total += (int)$comment_list[$i]['star'];
+        }
+        $new_star = (int)$new_star_total/$len;
+        
+        // 更新评分
+        M('gym')->where(['gym.gym_id' => $gym_id])->setField('star',$new_star);
+
+
         if($add_comment){
             $result['comment_time'] = $time;
             $this->ret($result);
