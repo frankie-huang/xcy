@@ -939,7 +939,7 @@ class IndexController extends Controller {
             ->where(['gym.gym_id' => $gym_id])
             ->field([
                 'gym_site_id',
-                'gym.gym_name' => 'name',
+                'gym_site.name' => 'name',
                 'gym_site.number',
                 'type_id'
             ])
