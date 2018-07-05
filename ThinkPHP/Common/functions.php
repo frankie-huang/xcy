@@ -282,11 +282,17 @@ function I($name,$default='',$filter=null,$datas=null) {
     }
     switch(strtolower($method)) {
         case 'get'     :   
+            if (empty($_GET)) {
+                $_GET = $_POST;
+            }
         	$input =& $_GET;
         	break;
         case 'post'    :   
             if (empty($_POST)) {
                 $_POST = json_decode(file_get_contents('php://input'), true);
+            }
+            if (empty($_POST)) {
+                $_POST = $_GET;
             }
         	$input =& $_POST;
         	break;
