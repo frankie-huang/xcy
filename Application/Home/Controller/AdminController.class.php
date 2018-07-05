@@ -365,6 +365,77 @@ class AdminController extends Controller {
     }
 
     /**
+     * 添加场馆场地
+     */
+    public function add_gym_site()
+    {
+        $u_id = session('u_id');
+        $admin_weight = session('admin_weight');
+        $gym_id = I('post.gym_id');
+        $site_name = I('post.name');
+        $type_id = I('post.type_id');
+        $number = I('post.number');
+        if (empty($u_id)) {
+            $this->ret($result, -1, '未登录');
+        }
+        if ($admin_weight < 1) {
+            $this->ret($result, 0, '无权限');
+        }
+        if (!$this->can_do($u_id, $admin_weight, $gym_id, 5)) {
+            $this->ret($result, 0, '无权限进行操作');
+        }
+
+        $db_site = M('gym_site');
+        $data = [
+            'gym_id' => $gym_id,
+            'name' => $site_name,
+            'type_id' => $type_id,
+            'number' => $number,
+        ];
+        $last_id = $db_site->add($data);
+        if (!is_numeric($last_id)) {
+            $this->ret($result, 0, '数据库插入出错');
+        } else {
+            $result['gym_site_id'] = $last_id;
+            $this->ret($result);
+        }
+    }
+
+    /**
+     * 修改场馆场地信息
+     */
+    public function update_gym_site()
+    {
+        $admin_weight = session('admin_weight');
+        $u_id = session('u_id');
+        $post = I('post.');
+        $gym_site_id = $post['gym_site_id'];
+
+        $db = M();
+        $get_gym_id = $db->table('gym_site')->field('gym_id')->where(['gym_site_id' => $gym_site_id])->find();
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 2)) {
+            $this->ret($result, 0, '无权限进行操作');
+        }
+
+        $update_data = [];
+        if (isset($post['name'])) {
+            $update_data['name'] = $post['name'];
+        }
+        if (isset($post['type_id'])) {
+            $update_data['type_id'] = $post['type_id'];
+        }
+        if (isset($post['number'])) {
+            $update_data['number'] = $post['number'];
+        }
+        if (empty($update_data)) {
+            $this->ret($result, 1, '无需要更新的数据');
+        }
+
+        $db->table('gym_site')->where(['gym_site_id' => $gym_site_id])->save($update_data);
+        $this->ret($result);
+    }
+
+    /**
      * 添加场馆角色
      */
     public function add_gym_role() {
