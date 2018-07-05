@@ -137,7 +137,7 @@ class AdminController extends Controller {
                     'detail_msg',
                 ])
                 ->where(['is_delete' => '0']);
-            if (!empty($city_id)) {
+            if ($city_id == '0' || !empty($city_id)) {
                 $gym_list = $gym_list->where(['gym.city' => $city_id]);
             }
             $gym_list = $gym_list->select();
@@ -191,7 +191,7 @@ class AdminController extends Controller {
                 ])
                 ->where(['is_delete' => '0'])
                 ->where(['gym.founder' => $u_id]);
-            if (!empty($city_id)) {
+            if ($city_id == '0' || !empty($city_id)) {
                 $gym_list = $gym_list->where(['gym.city' => $city_id]);
             }
             $gym_list = $gym_list->select();
@@ -252,7 +252,7 @@ class AdminController extends Controller {
                 ])
                 ->where(['is_delete' => '0'])
                 ->where(['gym.gym_id' => $get_gym_id['gym_id']]);
-            if (!empty($city_id)) {
+            if ($city_id == '0' || !empty($city_id)) {
                 $gym_list = $gym_list->where(['gym.city' => $city_id]);
             }
             $gym_list = $gym_list->select();
