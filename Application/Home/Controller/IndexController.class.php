@@ -312,6 +312,9 @@ class IndexController extends Controller {
     public function get_my_historical_gym() {
         // 读取session里面的u_id，用作查询数据表的筛选条件
         $u_id = session('u_id');
+        if ($u_id == null) {
+            $this->ret($result, -1, '未登录');
+        }
         $gym_list = M('book_order')
             ->join('order_site on order_site.order_id = book_order.order_id','LEFT')
             ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
@@ -462,6 +465,9 @@ class IndexController extends Controller {
         // $id_list = [1,2,3];
 
         $u_id = session('u_id');
+        if ($u_id == null) {
+            $this->ret($result, -1, '未登录');
+        }
         // $u_id =3;
         $db_gym = M('gym_site_time');
         $amount = 0;
@@ -498,6 +504,9 @@ class IndexController extends Controller {
      */
     public function get_message_list() {
         $u_id = session('u_id');
+        if ($u_id == null) {
+            $this->ret($result, -1, '未登录');
+        }
         // $u_id = 1;
         $is_read = I('get.is_read');
 
@@ -572,6 +581,9 @@ class IndexController extends Controller {
         // $order_list = 
 
         $u_id = session('u_id');
+        if ($u_id == null) {
+            $this->ret($result, -1, '未登录');
+        }
         $gym_list = M('book_order')
             ->join('order_site on order_site.order_id = book_order.order_id','LEFT')
             ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
@@ -693,6 +705,9 @@ class IndexController extends Controller {
      */
     public function to_be_merchant() {
         $u_id = session('u_id');
+        if ($u_id == null) {
+            $this->ret($result, -1, '未登录');
+        }
         $data['u_id'] = $u_id;
         $data['apply_time'] = date('y-m-d H:i:s',time());
         $data['status'] = 0;
@@ -712,8 +727,10 @@ class IndexController extends Controller {
      * 用户评价一个订单
      */
     public function comment_order() {
-        $this->islogin();
         $u_id = session('u_id');
+        if ($u_id == null) {
+            $this->ret($result, -1, '未登录');
+        }
         // $u_id = 1;
         $order_id = I('post.order_id');
         $star = I('post.star');
@@ -771,6 +788,31 @@ class IndexController extends Controller {
         }
         
     }
+
+    /**
+     * 充值
+     */
+    public function recharge(){
+        $u_id = session('u_id');
+        if ($u_id == null) {
+            $this->ret($result, -1, '未登录');
+        }
+        $number = I('get.number');
+
+
+        $data['u_id'] = $u_id;
+        $data['amount'] = $number;
+        $data['recharge_time'] = date('y-m-d H:i:s',time());
+        $user = M('user')->where(['user.u_id' => $u_id])->find();
+
+        $new_balance = (int)$user['balance']+(int)$number;
+
+        M('recharge_order')->add($data);
+        M('user')->where(['user.u_id' => $u_id])->setField('balance',$new_balance);
+        $result['balance'] = $new_balance;
+        $this->ret($result);
+    }
+
 
     /**
      * 上传图片
