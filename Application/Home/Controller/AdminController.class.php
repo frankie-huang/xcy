@@ -5,7 +5,7 @@ class AdminController extends Controller {
 
     public function __construct(){
         // dump($_SERVER['PATH_INFO']);
-        if ($_SERVER['REQUEST_METHOD'] != 'POTION') {
+        if ($_SERVER['REQUEST_METHOD'] != 'OPTIONS') {
             if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                 $request_data = json_encode(I('get.'));
             } elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
