@@ -462,13 +462,20 @@ class IndexController extends Controller {
         // $id_list = [1,2,3];
 
         $u_id = session('u_id');
-        // $u_id = 1;
+        // $u_id =3;
         $db_gym = M('gym_site_time');
         $amount = 0;
         for($i = 0, $len = count($id_list); $i < $len; $i++){
             $gym_site_time = $db_gym->where(['gym_site_time.gym_site_id' => $id_list[$i]])->find();
             $amount += $gym_site_time['price'];
         }
+
+        $user = M('user')->where(['user.u_id' => $u_id])->find();
+        if((int)$user['balance']-(int)$amount<0){
+            $this->ret($result, 0, '余额不足');
+        }
+        $new_balance = (int)$user['balance']-(int)$amount;
+        M('user')->where(['user.u_id' => $u_id])->setField('balance',$new_balance);
         $time = date('y-m-d H:i:s',time());
         $data['success_time'] = $time;
         $data['u_id'] = $u_id;
@@ -493,6 +500,10 @@ class IndexController extends Controller {
         $u_id = session('u_id');
         // $u_id = 1;
         $is_read = I('get.is_read');
+
+        M('message')->where(['u_id' => $u_id])->setField('is_read','1');
+
+
         $message_list = M('message')
             ->field([
                 'message_id',
