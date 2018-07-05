@@ -928,6 +928,38 @@ class IndexController extends Controller {
         $this->ret($result);
     }
 
+    /**
+     * 获取一个场馆的场地信息
+     */
+    public function get_gym_site_list() {
+        $gym_id = I('post.gym_id');
+        $gym_site_list = M('gym_site')
+            ->join('gym on gym.gym_id = gym_site.gym_id','LEFT')
+            ->where(['gym.gym_id' => $gym_id])
+            ->field([
+                'gym_site_id',
+                'gym.gym_name' => 'name',
+                'gym_site.number',
+                'type_id'
+            ])
+            ->select();
+
+        for ($i = 0, $len = count($gym_site_list); $i < $len; $i++){
+            $gym_site_list[$i]['key'] = $i;
+        }
+        if ($gym_site_list === false) {
+            $this->ret($result, 0, '数据库查询出错');
+        } else {
+            $result['gym_site_list'] = $gym_site_list;
+            $this->ret($result);
+        }
+    }
+
+
+
+
+
+
 
     /**
      * 上传图片
