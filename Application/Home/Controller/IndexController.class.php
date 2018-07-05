@@ -521,6 +521,7 @@ class IndexController extends Controller {
      */
     public function get_message_list() {
         $u_id = session('u_id');
+        $this->ret($u_id);
         if ($u_id == null) {
             $this->ret($result, -1, '未登录');
         }
