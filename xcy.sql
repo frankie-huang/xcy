@@ -136,7 +136,7 @@ INSERT INTO `gym_operation` (`label`) VALUES
 ('修改场馆信息'),
 ('查看场馆评论'),
 ('查看订单'),
-('添加场馆场地');
+('管理场馆场地');
 
 -- 场馆角色
 CREATE TABLE `gym_role` (
