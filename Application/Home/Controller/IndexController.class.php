@@ -591,13 +591,13 @@ class IndexController extends Controller {
         // echo "     ";
         // echo strtotime("+1 day");
 
-        // $u_id = 1;
+        $u_id = 1;
         // $order_list = 
 
-        $u_id = session('u_id');
-        if ($u_id == null) {
-            $this->ret($result, -1, '未登录');
-        }
+        // $u_id = session('u_id');
+        // if ($u_id == null) {
+        //     $this->ret($result, -1, '未登录');
+        // }
         $gym_list = M('book_order')
             ->join('order_site on order_site.order_id = book_order.order_id','LEFT')
             ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
@@ -610,6 +610,7 @@ class IndexController extends Controller {
                 'book_order.amount'=>'price',
                 'book_order.success_time'=>'time'
             ])
+            ->group('book_order.order_id')
             ->where(['book_order.u_id'=>$u_id])
             ->select();
 
@@ -633,7 +634,34 @@ class IndexController extends Controller {
             }
         }
         for ($i = 0, $len = count($gym_list); $i < $len; $i++){
-            $gym_list[$i]['is_over'] = 0;
+
+            $order_id = $gym_list[$i]['order_id'];
+            $gym_site_time = M('gym_site_time')
+            ->join('order_site on order_site.gym_site_time_id = gym_site_time.gym_site_time_id','LEFT')
+            ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id')
+            ->where(['order_site.order_id' => $order_id])
+            ->field([
+                'gym_site_time.date',
+                'gym_site.name',
+                'gym_site_time.price',
+                'gym_site.type_id',
+                'gym_site_time.start_time',
+                'gym_site_time.end_time'
+            ])
+            ->select();
+            
+            
+            $is_over = 1;
+            $now = strtotime('now');
+            for ($j = 0, $len2 = count($gym_site_time); $j < $len2; $j++) {
+                $date_time = strtotime($gym_site_time[$j]['date'].' '.$gym_site_time[$j]['end_time']);
+                if($now<$date_time){
+                    $is_over = 0;
+                    break;
+                }
+            }
+            // dump($is_over);
+            $gym_list[$i]['is_over'] = $is_over;
             switch($gym_list[$i]['type_id'])
             {
                 case 0:
@@ -658,12 +686,13 @@ class IndexController extends Controller {
                 $gym_list[$i]['type_name'] = '未知';break;
             }
         }
-        if ($gym_list === false) {
-            $this->ret($result, 0, '数据库查询出错');
-        } else {
-            $result['order_list'] = $gym_list;
-            $this->ret($result);
-        }
+        dump($gym_list);
+        // if ($gym_list === false) {
+        //     $this->ret($result, 0, '数据库查询出错');
+        // } else {
+        //     $result['order_list'] = $gym_list;
+        //     $this->ret($result);
+        // }
         
     }
 
@@ -705,12 +734,14 @@ class IndexController extends Controller {
         $order['type_id'] = $gym_site_time[0]['type_id'];
         
         
-        $is_over = 0;
+        $is_over = 1;
+        $now = strtotime('now');
         for ($i = 0, $len = count($gym_site_time); $i < $len; $i++) {
             $date_time = strtotime($gym_site_time[$i]['date'].' '.$gym_site_time[$i]['end_time']);
-            $now = strtotime('now');
-            if($now>$date_time){
-                $is_over = 1;
+            
+            if($now<$date_time){
+                $is_over = 0;
+                break;
             }
         }
         
