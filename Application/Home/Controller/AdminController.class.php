@@ -5,18 +5,20 @@ class AdminController extends Controller {
 
     public function __construct(){
         // dump($_SERVER['PATH_INFO']);
-        if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-            $request_data = json_encode(I('get.'));
-        } elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $request_data = json_encode(I('post.'));
+        if ($_SERVER['REQUEST_METHOD'] != 'POTION') {
+            if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+                $request_data = json_encode(I('get.'));
+            } elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $request_data = json_encode(I('post.'));
+            }
+            $data = array(
+                'method' => $_SERVER['REQUEST_METHOD'],
+                'path' => $_SERVER['PATH_INFO'],
+                'data' => $request_data,
+            );
+            M('request_log')->add($data);
+            $data = array();
         }
-        $data = array(
-            'method' => $_SERVER['REQUEST_METHOD'],
-            'path' => $_SERVER['PATH_INFO'],
-            'data' => $request_data,
-        );
-        M('request_log')->add($data);
-        $data = array();
     }
 
     /**
