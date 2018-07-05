@@ -508,6 +508,32 @@ class AdminController extends Controller {
     }
 
     /**
+     * 删除场馆场地的场次信息
+     */
+    public function delete_gym_site_time()
+    {
+        $gym_site_time_id = I('post.gym_site_time_id');
+        $admin_weight = session('admin_weight');
+        $u_id = session('u_id');
+
+        $db = M();
+        $get_gym_site = $db->table('gym_site_time')->field('gym_site_id')->where(['gym_site_time_id' => $gym_site_time_id])->find();
+        $get_gym_id = $db->table('gym_site')->field('gym_id')->where(['gym_site_id' => $get_gym_site['gym_site_id']])->find();
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 5)) {
+            $this->ret($result, 0, '无权限进行操作');
+        }
+
+        // 判断场地场次是否关联了订单，关联了则暂不允许删除
+        $get_order = $db->table('order_site')->where(['gym_site_time_id' => $gym_site_time_id])->select();
+        if (!empty($get_order)) {
+            $this->ret($result, 0, '该场地场次已有部分订单信息与其绑定，暂不支持删除');
+        }
+
+        $db->table('gym_site_time')->where(['gym_site_time_id' => $gym_site_time_id])->delete();
+        $this->ret($result);
+    }
+
+    /**
      * 添加场馆角色
      */
     public function add_gym_role() {
