@@ -591,13 +591,13 @@ class IndexController extends Controller {
         // echo "     ";
         // echo strtotime("+1 day");
 
-        $u_id = 1;
+        // $u_id = 1;
         // $order_list = 
 
-        // $u_id = session('u_id');
-        // if ($u_id == null) {
-        //     $this->ret($result, -1, '未登录');
-        // }
+        $u_id = session('u_id');
+        if ($u_id == null) {
+            $this->ret($result, -1, '未登录');
+        }
         $gym_list = M('book_order')
             ->join('order_site on order_site.order_id = book_order.order_id','LEFT')
             ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
