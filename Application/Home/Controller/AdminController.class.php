@@ -468,6 +468,46 @@ class AdminController extends Controller {
     }
 
     /**
+     * 添加场馆场地的场次信息
+     */
+    public function add_gym_site_time()
+    {
+        $u_id = session('u_id');
+        $admin_weight = session('admin_weight');
+        $gym_site_id = I('post.gym_site_id');
+        $price = I('post.price');
+        $date = I('post.date');
+        $start_time = I('post.start_time');
+        $end_time = I('post.end_time');
+        if (empty($u_id)) {
+            $this->ret($result, -1, '未登录');
+        }
+        if ($admin_weight < 1) {
+            $this->ret($result, 0, '无权限');
+        }
+        $db = M();
+        $get_gym_id = $db->table('gym_site')->field('gym_id')->where(['gym_site_id' => $gym_site_id])->find();
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 5)) {
+            $this->ret($result, 0, '无权限进行操作');
+        }
+
+        $data = [
+            'gym_site_id' => $gym_site_id,
+            'price' => $price,
+            'date' => $date,
+            'start_time' => $start_time,
+            'end_time' => $end_time,
+        ];
+        $last_id = $db->table('gym_site_time')->add($data);
+        if (!is_numeric($last_id)) {
+            $this->ret($result, 0, '数据库插入出错');
+        } else {
+            $result['gym_site_time_id'] = $last_id;
+            $this->ret($result);
+        }
+    }
+
+    /**
      * 添加场馆角色
      */
     public function add_gym_role() {
