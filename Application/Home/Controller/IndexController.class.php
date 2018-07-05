@@ -314,9 +314,9 @@ class IndexController extends Controller {
     public function get_my_historical_gym() {
         // 读取session里面的u_id，用作查询数据表的筛选条件
         $u_id = session('u_id');
-        if ($u_id == null) {
-            $this->ret($result, -1, '未登录');
-        }
+        // if ($u_id == null) {
+        //     $this->ret($result, -1, '未登录');
+        // }
         $gym_list = M('book_order')
             ->join('order_site on order_site.order_id = book_order.order_id','LEFT')
             ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
@@ -468,9 +468,9 @@ class IndexController extends Controller {
         // $id_list = [1,2,3];
 
         $u_id = session('u_id');
-        if ($u_id == null) {
-            $this->ret($result, -1, '未登录');
-        }
+        // if ($u_id == null) {
+        //     $this->ret($result, -1, '未登录');
+        // }
         // $u_id =1;
         $db_gym = M('gym_site_time');
         $amount = 0;
@@ -521,10 +521,10 @@ class IndexController extends Controller {
      */
     public function get_message_list() {
         $u_id = session('u_id');
-        $this->ret($u_id);
-        if ($u_id == null) {
-            $this->ret($result, -1, '未登录');
-        }
+        dump($u_id);
+        // if ($u_id == null) {
+        //     $this->ret($result, -1, '未登录');
+        // }
         // $u_id = 1;
         $is_read = I('get.is_read');
 
@@ -599,9 +599,9 @@ class IndexController extends Controller {
         // $order_list = 
 
         $u_id = session('u_id');
-        if ($u_id == null) {
-            $this->ret($result, -1, '未登录');
-        }
+        // if ($u_id == null) {
+        //     $this->ret($result, -1, '未登录');
+        // }
         $gym_list = M('book_order')
             ->join('order_site on order_site.order_id = book_order.order_id','LEFT')
             ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
@@ -690,13 +690,13 @@ class IndexController extends Controller {
                 $gym_list[$i]['type_name'] = '未知';break;
             }
         }
-        dump($gym_list);
-        // if ($gym_list === false) {
-        //     $this->ret($result, 0, '数据库查询出错');
-        // } else {
-        //     $result['order_list'] = $gym_list;
-        //     $this->ret($result);
-        // }
+        // dump($gym_list);
+        if ($gym_list === false) {
+            $this->ret($result, 0, '数据库查询出错');
+        } else {
+            $result['order_list'] = $gym_list;
+            $this->ret($result);
+        }
         
     }
 
@@ -721,6 +721,12 @@ class IndexController extends Controller {
            ->where(['book_order.order_id' => $order_id])
            ->find();
 
+        if($order){
+            
+        } else {
+            $this->ret($result, 0, '出错');
+        }
+        
         $gym_site_time = M('gym_site_time')
             ->join('order_site on order_site.gym_site_time_id = gym_site_time.gym_site_time_id','LEFT')
             ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id')
@@ -792,9 +798,9 @@ class IndexController extends Controller {
      */
     public function to_be_merchant() {
         $u_id = session('u_id');
-        if ($u_id == null) {
-            $this->ret($result, -1, '未登录');
-        }
+        // if ($u_id == null) {
+        //     $this->ret($result, -1, '未登录');
+        // }
         $data['u_id'] = $u_id;
         $data['apply_time'] = date('y-m-d H:i:s',time());
         $data['status'] = 0;
@@ -815,9 +821,9 @@ class IndexController extends Controller {
      */
     public function comment_order() {
         $u_id = session('u_id');
-        if ($u_id == null) {
-            $this->ret($result, -1, '未登录');
-        }
+        // if ($u_id == null) {
+        //     $this->ret($result, -1, '未登录');
+        // }
         // $u_id = 1;
         $order_id = I('post.order_id');
         $star = I('post.star');
@@ -874,7 +880,7 @@ class IndexController extends Controller {
      * 获取一个场馆的所有评价
      */
     public function get_gym_comment() {
-        $gym_id = I('get.gym_id');
+        $gym_id = I('post.gym_id');
         $gym_comment_list = M('comment')
             ->join('user on user.u_id = comment.u_id','LEFT')
             ->join('book_order on book_order.order_id = comment.order_id','LEFT')
@@ -910,9 +916,9 @@ class IndexController extends Controller {
      */
     public function recharge(){
         $u_id = session('u_id');
-        if ($u_id == null) {
-            $this->ret($result, -1, '未登录');
-        }
+        // if ($u_id == null) {
+        //     $this->ret($result, -1, '未登录');
+        // }
         $number = I('get.number');
 
 
@@ -939,7 +945,7 @@ class IndexController extends Controller {
             ->where(['gym.gym_id' => $gym_id])
             ->field([
                 'gym_site_id',
-                'gym.gym_name' => 'name',
+                'gym_site.name' => 'name',
                 'gym_site.number',
                 'type_id'
             ])
