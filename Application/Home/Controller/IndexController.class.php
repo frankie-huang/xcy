@@ -721,6 +721,12 @@ class IndexController extends Controller {
            ->where(['book_order.order_id' => $order_id])
            ->find();
 
+        if($order){
+            
+        } else {
+            $this->ret($result, 0, '出错');
+        }
+        
         $gym_site_time = M('gym_site_time')
             ->join('order_site on order_site.gym_site_time_id = gym_site_time.gym_site_time_id','LEFT')
             ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id')
