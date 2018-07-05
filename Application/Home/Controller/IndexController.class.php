@@ -880,7 +880,7 @@ class IndexController extends Controller {
      * 获取一个场馆的所有评价
      */
     public function get_gym_comment() {
-        $gym_id = I('get.gym_id');
+        $gym_id = I('post.gym_id');
         $gym_comment_list = M('comment')
             ->join('user on user.u_id = comment.u_id','LEFT')
             ->join('book_order on book_order.order_id = comment.order_id','LEFT')
