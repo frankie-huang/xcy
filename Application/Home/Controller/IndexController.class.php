@@ -192,6 +192,7 @@ class IndexController extends Controller {
             ->select();
 
         for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
+            $gym_list[$i]['star'] = (int)$gym_list[$i]['star']; 
             $gym_list[$i]['key'] = $i;
             // 判断其type_id
             $get_gym_site = $db_gym->table('gym_site')->field('type_id')->where(['gym_id' => $gym_list[$i]['gym_id']])->select();
@@ -267,6 +268,7 @@ class IndexController extends Controller {
             for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
                 // $gym_list[$i]['key'] = $i;
                 // 判断其type_id
+                $gym_list[$i]['star'] = (int)$gym_list[$i]['star']; 
                 $get_gym_site = $db_gym->table('gym_site')->field('type_id')->where(['gym_id' => $gym_list[$i]['gym_id']])->select();
                 $num = count($get_gym_site);
                 if ($num == 0) {
@@ -336,6 +338,7 @@ class IndexController extends Controller {
         for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
             // $gym_list[$i]['key'] = $i;
             // 判断其type_id
+            $gym_list[$i]['star'] = (int)$gym_list[$i]['star'];
             $get_gym_site = M('gym_site')->field('type_id')->where(['gym_id' => $gym_list[$i]['gym_id']])->select();
             $num = count($get_gym_site);
             if ($num == 0) {
@@ -381,7 +384,7 @@ class IndexController extends Controller {
             ])
             ->where(['gym.gym_id' => $gym_id])
             ->find();
-
+        $gym_list['star'] = (int)$gym_list['star'];
                 $get_gym_site = M('gym_site')->field('type_id')->where(['gym_id' => $gym_list['gym_id']])->select();
                 $num = count($get_gym_site);
                 if ($num == 0) {
@@ -924,6 +927,38 @@ class IndexController extends Controller {
         $result['balance'] = $new_balance;
         $this->ret($result);
     }
+
+    /**
+     * 获取一个场馆的场地信息
+     */
+    public function get_gym_site_list() {
+        $gym_id = I('post.gym_id');
+        $gym_site_list = M('gym_site')
+            ->join('gym on gym.gym_id = gym_site.gym_id','LEFT')
+            ->where(['gym.gym_id' => $gym_id])
+            ->field([
+                'gym_site_id',
+                'gym.gym_name' => 'name',
+                'gym_site.number',
+                'type_id'
+            ])
+            ->select();
+
+        for ($i = 0, $len = count($gym_site_list); $i < $len; $i++){
+            $gym_site_list[$i]['key'] = $i;
+        }
+        if ($gym_site_list === false) {
+            $this->ret($result, 0, '数据库查询出错');
+        } else {
+            $result['gym_site_list'] = $gym_site_list;
+            $this->ret($result);
+        }
+    }
+
+
+
+
+
 
 
     /**
