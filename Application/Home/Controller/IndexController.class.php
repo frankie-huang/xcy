@@ -449,16 +449,60 @@ class IndexController extends Controller {
             $num = count(M('order_site')->where(['gym_site_time_id'=>$gym_site_list[$i]['gym_site_time_id']])->select());
             $gym_site_list[$i]['remain'] = $gym_site_list[$i]['number']-$num;
         }
-        if ($gym_site_list === false) {
-            $this->ret($result, 0, '数据库查询出错');
-        } else {
-            $result['gym_site_list'] = $gym_site_list;
-            $this->ret($result);
+
+        $result = array();
+        foreach($gym_site_list as $k=>$v){
+            $key = $v['type_id'];
+            if(!array_key_exists($key, $result)) $result[$key] =array();
+            $result[$key][] = $v;
+
         }
+
+        // for ($i = 0, $len = count($result); $i < $len; $i++){
+        //     $result1 = array();
+        //     foreach($result[$i] as $k=>$v){
+        //         $key = $v['gym_site_id'];
+        //         if(!array_key_exists($key, $result1)) $result1[$key] =array();
+        //         $result1[$key][] = $v;
+        //         $result[$i] = $result1;
+        //     }
+        // }
+        foreach($result as $k => $v){
+            // $result1 = array();
+            // foreach($value as $k=>$v){
+            //     $key = $v['gym_site_id'];
+            //     if(!array_key_exists($key, $result1)) $result1[$key] =array();
+            //     $result1[$key][] = $v;
+            // }
+            // $value = $result1;
+            
+            $result[$k] = $this->group_same_key($result[$k],'gym_site_id');
+            
+        }
+
+        
+
+        $this->ret($result);
+        // if ($gym_site_list === false) {
+        //     $this->ret($result, 0, '数据库查询出错');
+        // } else {
+        //     $result['gym_site_list'] = $gym_site_list;
+        //     $this->ret($result);
+        // }
         
         
         
     }
+
+    private function group_same_key($arr,$key){
+        $new_arr = array();
+        foreach($arr as $k=>$v ){
+            $new_arr[$v[$key]][] = $v;
+        }
+        return $new_arr;
+    }
+
+
 
     /**
      * 订场
@@ -521,7 +565,6 @@ class IndexController extends Controller {
      */
     public function get_message_list() {
         $u_id = session('u_id');
-        dump($u_id);
         // if ($u_id == null) {
         //     $this->ret($result, -1, '未登录');
         // }
@@ -901,7 +944,11 @@ class IndexController extends Controller {
             ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
             ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id','LEFT')
             ->where(['gym_site.gym_id' => $gym_id])
-            ->group('comment.comment_id')
+            ->field([
+                'comment_id',
+                'comment.star'
+            ])
+            ->distinct(true)
             ->select();
         
         $new_star_total = 0;
