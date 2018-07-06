@@ -889,6 +889,7 @@ class IndexController extends Controller {
             ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id','LEFT')
             ->join('gym on gym.gym_id = gym_site.gym_id','LEFT')
             ->field([
+                'comment_id',
                 'user.u_id',
                 'user.phone_number',
                 'user.nick',
@@ -898,7 +899,8 @@ class IndexController extends Controller {
                 'comment_time'
             ])
             ->where(['gym_site.gym_id' => $gym_id])
-            ->group('comment.comment_id')
+            // ->group('comment.comment_id')
+            ->distinct(true)
             ->select();
             
 
