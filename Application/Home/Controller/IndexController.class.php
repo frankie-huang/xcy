@@ -412,7 +412,7 @@ class IndexController extends Controller {
     /**
      * 获取一个场馆近七天的场次信息
      */
-    public function get_a_gym_site() {
+    public function get_a_gym_site_feiqi() {
         $gym_id	 = I('get.gym_id');
 
         $time = $time != '' ? $time : time();
@@ -502,6 +502,72 @@ class IndexController extends Controller {
         return $new_arr;
     }
 
+    public function get_a_gym_site() {
+        $gym_id = I('get.gym_id');
+        $gym_site = M('gym_site')
+            ->join('gym on gym.gym_id = gym_site.gym_id','LEFT')
+            ->field([
+                'gym_site_id',
+                'gym_site.name',
+                'gym_site.type_id'
+            ])
+            ->where(['gym_site.gym_id' => $gym_id])
+            ->select();
+        
+        $time = $time != '' ? $time : time();
+        $date = [];
+        for ($i=0; $i<  7; $i++){
+            $date[$i] = date('Y-m-d' ,strtotime( '+' . $i .' days', $time));
+        }
+        $map['date'] = array('in',$date);
+        
+        foreach($gym_site as $k=>$v) {
+            $gym_site_time = M('gym_site_time')
+                ->where(['gym_site_time.gym_site_id' => $v['gym_site_id']])
+                ->where($map)
+                ->select();
+            
+            for ($i = 0, $len = count($gym_site_time); $i < $len; $i++){
+                $gym_site_time[$i]['key'] = $i;
+                $num = count(M('order_site')->where(['gym_site_time_id'=>$gym_site_time[$i]['gym_site_time_id']])->select());
+                $gym_site_time[$i]['remain'] = $gym_site_time[$i]['number']-$num;
+            }
+            // dump($k);
+            // dump($gym_site_time);
+            $gym_site[$k]['list'] = $gym_site_time;
+        }
+        // 
+
+
+        $new_array = $this->group_same_key($gym_site,'type_id');
+
+        $gym_site_time_result= [];
+        $i=0;
+        foreach($new_array as $k=>$v) {
+            
+            $data['key'] = $i;
+            $i++;
+            $data['type_id'] = $k;
+            // $data['name'] = $v[0]['name'];
+            $data['list'] = $v;
+            $j=0;
+            foreach($data['list'] as $k=>$v){
+                $data['list'][$k]['key'] = $j;
+                $j++;
+            }
+            // dump($data);
+            array_push($gym_site_time_result,$data);
+        }
+        // $this->ret($gym_site_time_result);
+
+        if ($gym_site_time_result === false) {
+            $this->ret($result, 0, '数据库查询出错');
+        } else {
+            $result['gym_site_list'] = $gym_site_time_result;
+            $this->ret($result);
+        }
+
+    }
 
 
     /**
