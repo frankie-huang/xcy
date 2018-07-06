@@ -717,11 +717,12 @@ class IndexController extends Controller {
                'gym.gym_id',
                'gym.gym_name',
                'book_order.amount'=>'price',
-               'book_order.success_time'=>'time'
+               'book_order.success_time'=>'time',
+               'gym.detail_address'
            ])
            ->where(['book_order.order_id' => $order_id])
            ->find();
-
+           
         if($order){
             
         } else {
@@ -742,8 +743,52 @@ class IndexController extends Controller {
             ])
             ->select();
         
-        $order['type_id'] = $gym_site_time[0]['type_id'];
+        $get_gym_site = M('gym_site')->field('type_id')->where(['gym_id' => $order['gym_id']])->select();
+        $num = count($get_gym_site);
+        if ($num == 0) {
+            $order['type_id'] = 9;
+        } else {
+            $order['type_id'] = $get_gym_site[0]['type_id'];
+            if ($num > 1) {
+                for ($j = 1; $j < $num; $j++) {
+                    if ($get_gym_site[$j]['type_id'] != $get_gym_site[0]['type_id']) {
+                        $order['type_id'] = 8;
+                        break;
+                    }
+                }
+            }
+        }
+
         
+
+
+
+
+        for ($i = 0, $len = count($gym_site_time); $i < $len; $i++){
+            switch($gym_site_time[$i]['type_id'])
+            {
+                case 0:
+                $gym_site_time[$i]['type_name'] = '羽毛球';break;
+                case 1:
+                $gym_site_time[$i]['type_name'] = '篮球';break;
+                case 2:
+                $gym_site_time[$i]['type_name'] = '足球';break;
+                case 3:
+                $gym_site_time[$i]['type_name'] = '游泳';break;
+                case 4:
+                $gym_site_time[$i]['type_name'] = '健身';break;
+                case 5:
+                $gym_site_time[$i]['type_name'] = '网球';break;
+                case 6:
+                $gym_site_time[$i]['type_name'] = '台球';break;
+                case 7:
+                $gym_site_time[$i]['type_name'] = '其他';break;
+                case 8:
+                $gym_site_time[$i]['type_name'] = '综合';break;
+                case 9:
+                $gym_site_time[$i]['type_name'] = '未知';break;
+            }
+        }
         
         $is_over = 1;
         $now = strtotime('now');
