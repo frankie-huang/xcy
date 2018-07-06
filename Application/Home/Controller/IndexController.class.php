@@ -614,7 +614,8 @@ class IndexController extends Controller {
                 'book_order.amount'=>'price',
                 'book_order.success_time'=>'time'
             ])
-            ->group('book_order.order_id')
+            // ->group('book_order.order_id')
+            ->distinct(true)
             ->where(['book_order.u_id'=>$u_id])
             ->select();
 
