@@ -937,7 +937,8 @@ class AdminController extends Controller {
             ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id')
             ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id')
             ->join('gym on gym.gym_id = gym_site.gym_id')
-            ->join('user on user.u_id = book_order.u_id');
+            ->join('user on user.u_id = book_order.u_id')
+            ->order('success_time desc');
         if (!empty($post['gym_id'])) {
             $get_order_list = $get_order_list->where(['gym.gym_id' => $post['gym_id']]);
         }
@@ -995,6 +996,20 @@ class AdminController extends Controller {
         if ($admin_weight < 10) {
             $this->ret($result, 0, '只有超管可以查看申请列表');
         }
+
+        $apply_list = M('apply_list')
+            ->field([
+                'apply_id',
+                'user.phone_number' => 'user',
+                'apply_time',
+                'status',
+                'last_time',
+            ])
+            ->join('user on user.u_id = apply_list.u_id')
+            ->order('apply_time desc')
+            ->select();
+        $result['apply_list'] = $apply_list;
+        $this->ret($result);
     }
     
     /**
