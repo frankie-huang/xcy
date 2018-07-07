@@ -615,7 +615,7 @@ class AdminController extends Controller {
         $db = M();
         $get_operation_list = $db->table('gym_operation')->select();
         $get_role_list = $db->table('gym_role')->field('role_id, name, operation_list')->where(['gym_id' => $gym_id])->select();
-        for ($i = 0, $len < count($get_role_list); $i < $len; $i++) {
+        for ($i = 0, $len = count($get_role_list); $i < $len; $i++) {
             $get_role_list[$i]['key'] = $i;
             $operation_list = explode('|', $get_role_list[$i]['operation_list']);
             $get_role_list[$i]['operation_list'] = [];
