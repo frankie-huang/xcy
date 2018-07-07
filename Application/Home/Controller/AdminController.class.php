@@ -886,14 +886,16 @@ class AdminController extends Controller {
                     $post['gym_id'] = $get_gym_id['gym_id'];
                 } else {
                     if ($post['gym_id'] != $get_gym_id['gym_id']) {
-                        $this->ret(['order_list' => []]);
+                        $result = ['order_list' => []];
+                        $this->ret($result);
                     }
                 }
             } elseif ($admin_weight == 2) {
                 // 商家BOSS
                 $get_gym_list = $db->table('gym')->field('gym_id')->where(['founder' => $u_id])->select();
                 if (empty($get_gym_list)) {
-                    $this->ret(['order_list' => []]);
+                    $result = ['order_list' => []];
+                    $this->ret($result);
                 }
 
                 $gym_list = [];
@@ -902,7 +904,8 @@ class AdminController extends Controller {
                 }
                 if (!empty($post['gym_id'])) {
                     if (!in_array($post['gym_id'], $gym_list)) {
-                        $this->ret(['order_list' => []]);
+                        $result = ['order_list' => []];
+                        $this->ret($result);
                     } else {
                         $post['gym_id'] = null;
                     }
