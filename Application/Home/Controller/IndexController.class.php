@@ -1080,7 +1080,7 @@ class IndexController extends Controller {
         if ($u_id == null) {
             $this->ret($result, -1, '未登录');
         }
-        $number = I('get.number');
+        $number = I('post.number');
 
 
         $data['u_id'] = $u_id;
