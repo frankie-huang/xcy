@@ -727,6 +727,36 @@ class AdminController extends Controller {
     }
 
     /**
+     * 获取场馆管理员列表
+     */
+    public function get_gym_admin_list()
+    {
+        $admin_weight = session('admin_weight');
+        $u_id = session('u_id');
+        $gym_id = I('get.gym_id');
+
+        if (!$this->can_do($u_id, $admin_weight, $gym_id, 1)) {
+            $this->ret($result, 0, '当前登录者无权限查看管理员列表');
+        }
+
+        $db = M();
+        $gym_admin_list = $db->table('gym_admin')
+            ->field('gym_admin_id, account, gym_admin.name, gym_role.role_id, gym_role.name AS role_name')
+            ->join('gym_role on gym_role.role_id = gym_admin.role_id', 'LEFT')
+            ->where(['gym_id' => $gym_id])
+            ->select();
+        for ($i = 0, $len = count($gym_admin_list); $i < $len; $i++) {
+            $gym_admin_list[$i]['key'] = $i;
+            $gym_admin_list[$i]['role'] = [
+                'role_id' => $gym_admin_list[$i]['role_id'],
+                'name' => $gym_admin_list[$i]['role_name'],
+            ];
+        }
+        $result['gym_admin_list'] = $gym_admin_list;
+        $this->ret($result);
+    }
+
+    /**
      * 添加管理员账号
      */
     public function add_gym_admin() {
