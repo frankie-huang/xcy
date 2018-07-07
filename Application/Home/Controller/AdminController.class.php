@@ -708,6 +708,25 @@ class AdminController extends Controller {
     }
 
     /**
+     * 删除场馆角色
+     */
+    public function delete_gym_role()
+    {
+        $role_id = I('post.role_id');
+        $admin_weight = session('admin_weight');
+        $u_id = session('u_id');
+
+        $db = M();
+        $get_gym_id = $db->table('gym_role')->field('gym_id')->where(['role_id' => $role_id])->find();
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 1)) {
+            $this->ret($result, 0, '无权限进行操作');
+        }
+
+        $db->table('gym_role')->where(['role_id' => $role_id])->delete();
+        $this->ret($result);
+    }
+
+    /**
      * 添加管理员账号
      */
     public function add_gym_admin() {
