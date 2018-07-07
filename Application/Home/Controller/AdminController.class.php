@@ -751,6 +751,8 @@ class AdminController extends Controller {
                 'role_id' => $gym_admin_list[$i]['role_id'],
                 'name' => $gym_admin_list[$i]['role_name'],
             ];
+            unset($gym_admin_list[$i]['role_id']);
+            unset($gym_admin_list[$i]['role_name']);
         }
         $result['gym_admin_list'] = $gym_admin_list;
         $this->ret($result);
