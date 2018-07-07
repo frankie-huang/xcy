@@ -866,6 +866,49 @@ class AdminController extends Controller {
         $post = I('post.');
 
         $db = M();
+
+        if (empty($admin_weight)) {
+            $this->ret($result, -1, '未登录');
+        } elseif ($admin_weight < 1) {
+            $this->ret($result, 0, '无权限');
+        } elseif ($admin_weight < 10) {
+            if ($admin_weight == 1) {
+                // 商家管理员
+                $get_gym_id = $db->table('gym_role')
+                    ->field('gym_id')
+                    ->join('gym_admin on gym_admin.role_id = gym_role.role_id', 'LEFT')
+                    ->where(['gym_admin_id' => $u_id])
+                    ->find();
+                if (empty($get_gym_id)) {
+                    $this->ret($result, 0, '当前管理员账号不属于任何场馆');
+                }
+                if (empty($post['gym_id'])) {
+                    $post['gym_id'] = $get_gym_id['gym_id'];
+                } else {
+                    if ($post['gym_id'] != $get_gym_id['gym_id']) {
+                        $this->ret(['order_list' => []]);
+                    }
+                }
+            } elseif ($admin_weight == 2) {
+                // 商家BOSS
+                $get_gym_list = $db->table('gym')->field('gym_id')->where(['founder' => $u_id])->select();
+                if (empty($get_gym_list)) {
+                    $this->ret(['order_list' => []]);
+                }
+
+                $gym_list = [];
+                for ($i = 0, $len = count($get_gym_list); $i < $len; $i++) {
+                    $gym_list[] = $get_gym_list[$i]['gym_id'];
+                }
+                if (!empty($post['gym_id'])) {
+                    if (!in_array($post['gym_id'], $gym_list)) {
+                        $this->ret(['order_list' => []]);
+                    } else {
+                        $post['gym_id'] = null;
+                    }
+                }
+            }
+        }
         // $get_role = $db->table('gym_admin')->field('role_id')->where(['gym_admin_id' => $gym_admin_id])->find();
         // $get_gym_id = $db->table('gym_role')->field('gym_id')->where(['role_id' => $get_role['role_id']])->find();
         // if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 1)) {
@@ -901,6 +944,9 @@ class AdminController extends Controller {
         if (!empty($post['city_id'])) {
             $get_order_list = $get_order_list->where(['gym.city_id' => $post['city_id']]);
         }
+        if ($admin_weight == 2) {
+            $get_order_list = $get_order_list->where(['gym.gym_id' => ['in', $gym_list]]);
+        }
         $get_order_list = $get_order_list->select();
 
         $gym_list = [];
@@ -935,6 +981,17 @@ class AdminController extends Controller {
         
         $result['order_list'] = $order_list;
         $this->ret($result);
+    }
+
+    /**
+     * 申请管理下显示申请列表
+     */
+    public function get_apply_list()
+    {
+        $admin_weight = session('admin_weight');
+        if ($admin_weight < 10) {
+            $this->ret($result, 0, '只有超管可以查看申请列表');
+        }
     }
     
     /**
