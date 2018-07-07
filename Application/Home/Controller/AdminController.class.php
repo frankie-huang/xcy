@@ -1011,6 +1011,52 @@ class AdminController extends Controller {
         $result['apply_list'] = $apply_list;
         $this->ret($result);
     }
+
+    /**
+     * 同意用户申请成为商户
+     */
+    public function agree()
+    {
+        $apply_id = I('post.apply_id');
+        $admin_weight = session('admin_weight');
+        if ($admin_weight < 10) {
+            $this->ret($result, 0, '只有超管可以处理用户的申请');
+        }
+
+        $db = M('apply_list');
+        $get_apply = $db->where(['apply_id' => $apply_id])->find();
+        if ($get_apply['status'] == 1) {
+            $this->ret($result, 0, '该用户之前已被批准成为商家');
+        }
+        $update['status'] = 1;
+        $update['last_time'] = date('Y-m-d H:i:s');
+        $db->where(['apply_id' => $apply_id])->save($update);
+        $result['last_time'] = $update['last_time'];
+        $this->ret($result);
+    }
+
+    /**
+     * 拒绝用户申请成为商户
+     */
+    public function refuse()
+    {
+        $apply_id = I('post.apply_id');
+        $admin_weight = session('admin_weight');
+        if ($admin_weight < 10) {
+            $this->ret($result, 0, '只有超管可以处理用户的申请');
+        }
+
+        $db = M('apply_list');
+        $get_apply = $db->where(['apply_id' => $apply_id])->find();
+        if ($get_apply['status'] == 2) {
+            $this->ret($result, 0, '该用户之前已被拒绝成为商家');
+        }
+        $update['status'] = 2;
+        $update['last_time'] = date('Y-m-d H:i:s');
+        $db->where(['apply_id' => $apply_id])->save($update);
+        $result['last_time'] = $update['last_time'];
+        $this->ret($result);
+    }
     
     /**
      * 验证是否有权限操作
