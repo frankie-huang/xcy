@@ -919,6 +919,7 @@ class AdminController extends Controller {
             if (!isset($gym_list[$get_order_list[$i]['order_id']])) {
                 $gym_list[$get_order_list[$i]['order_id']] = count($order_list);
                 $order_list[] = [
+                    'key' => $gym_list[$get_order_list[$i]['order_id']],
                     'order_id' => $get_order_list[$i]['order_id'],
                     'user' => $get_order_list[$i]['user'],
                     'gym_id' => $get_order_list[$i]['gym_id'],
@@ -931,7 +932,9 @@ class AdminController extends Controller {
             $order_index = $gym_list[$get_order_list[$i]['order_id']];
             $order_list[$order_index]['detail'] .= $get_order_list[$i]['gym_site_name'] . '(' . $type_map[$get_order_list[$i]['type_id']] . ') ' . $get_order_list[$i]['date'] . ' ' . $get_order_list[$i]['start_time'] . '-' . $get_order_list[$i]['end_time'] . ' ';
         }
-        dump($order_list);
+        
+        $result['order_list'] = $order_list;
+        $this->ret($result);
     }
     
     /**
