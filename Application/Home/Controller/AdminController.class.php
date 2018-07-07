@@ -851,6 +851,44 @@ class AdminController extends Controller {
         $db->table('gym_admin')->where(['gym_admin_id' => $gym_admin_id])->delete();
         $this->ret($result);
     }
+
+    /**
+     * 获取订场的订单列表
+     */
+    public function get_order_list()
+    {
+        $admin_weight = session('admin_weight');
+        $u_id = session('u_id');
+        $post = I('post.');
+
+        $db = M();
+        $get_order_list = $db->table('book_order')
+            ->field([
+                'book_order.order_id',
+                'phone_number' => 'user',
+                'gym.gym_id',
+                'gym.gym_name',
+                'amount',
+                'success_time',
+            ])
+            ->join('order_site on order_site.order_id = book_order.order_id')
+            ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id')
+            ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id')
+            ->join('gym on gym.gym_id = gym_site.gym_id')
+            ->join('user on user.u_id = book_order.u_id');
+        if (!empty($post['gym_id'])) {
+            $get_order_list = $get_order_list->where(['gym.gym_id' => $post['gym_id']]);
+        }
+        if ($post['type_id'] == '0' || !empty($post['type_id'])) {
+            $get_order_list = $get_order_list->where(['gym_site.type_id' => $post['type_id']]);
+        }
+        if (!empty($post['city_id'])) {
+            $get_order_list = $get_order_list->where(['gym.city_id' => $post['city_id']]);
+        }
+        $get_order_list = $get_order_list->select();
+
+        dump($get_order_list);
+    }
     
     /**
      * 验证是否有权限操作

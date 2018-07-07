@@ -88,7 +88,8 @@ CREATE TABLE `order_site` (
     `order_id` int(10) COMMENT "订单ID",
     `gym_site_time_id` int(10) COMMENT "场次时间ID",
     FOREIGN KEY (`order_id`) REFERENCES `book_order` (`order_id`) ON DELETE CASCADE,
-    FOREIGN KEY (`gym_site_time_id`) REFERENCES `gym_site_time` (`gym_site_time_id`) ON DELETE CASCADE
+    FOREIGN KEY (`gym_site_time_id`) REFERENCES `gym_site_time` (`gym_site_time_id`) ON DELETE CASCADE,
+    PRIMARY KEY (`order_id`, `gym_site_time_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- 消息
