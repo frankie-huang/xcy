@@ -600,6 +600,39 @@ class AdminController extends Controller {
     }
 
     /**
+     * 获取场馆角色列表
+     */
+    public function get_gym_role_list()
+    {
+        $admin_weight = session('admin_weight');
+        $u_id = session('u_id');
+        $gym_id = I('get.gym_id');
+
+        if (!$this->can_do($u_id, $admin_weight, $gym_id, 1)) {
+            $this->ret($result, 0, '当前登录者无权限查看角色列表');
+        }
+
+        $db = M();
+        $get_operation_list = $db->table('gym_operation')->select();
+        $get_role_list = $db->table('gym_role')->field('role_id, name, operation_list')->where(['gym_id' => $gym_id])->select();
+        for ($i = 0, $len < count($get_role_list); $i < $len; $i++) {
+            $get_role_list[$i]['key'] = $i;
+            $operation_list = explode('|', $get_role_list[$i]['operation_list']);
+            $get_role_list[$i]['operation_list'] = [];
+            for ($j = 0, $len_j = count($operation_list); $j < $len_j; $j++) {
+                $get_role_list[$i]['operation_list'][] = [
+                    'key' => $j,
+                    'operation_id' => $get_operation_list[$operation_list[$j] -1]['operation_id'],
+                    'label' => $get_operation_list[$operation_list[$j] -1]['label']
+                ];
+            }
+        }
+
+        $result['gym_role_list'] = $get_role_list;
+        $this->ret($result);
+    }
+
+    /**
      * 添加场馆角色
      */
     public function add_gym_role() {
@@ -692,6 +725,9 @@ class AdminController extends Controller {
      */
     private function can_do($u_id, $admin_weight, $gym_id, $operation_id = 0) {
         $db = M();
+        if (empty($admin_weight)) {
+            return false;
+        }
         if ($admin_weight < 10) {
             if ($admin_weight == 1) {
                 // 商家管理员
