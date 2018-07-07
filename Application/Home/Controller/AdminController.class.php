@@ -831,6 +831,26 @@ class AdminController extends Controller {
         $db->table('gym_admin')->where(['gym_admin_id' => $gym_admin_id])->save($update_data);
         $this->ret($result);
     }
+
+    /**
+     * 删除场馆管理员
+     */
+    public function delete_gym_admin()
+    {
+        $gym_admin_id = I('post.gym_admin_id');
+        $admin_weight = session('admin_weight');
+        $u_id = session('u_id');
+
+        $db = M();
+        $get_role = $db->table('gym_admin')->field('role_id')->where(['gym_admin_id' => $gym_admin_id])->find();
+        $get_gym_id = $db->table('gym_role')->field('gym_id')->where(['role_id' => $get_role['role_id']])->find();
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 1)) {
+            $this->ret($result, 0, '无权限进行操作');
+        }
+
+        $db->table('gym_admin')->where(['gym_admin_id' => $gym_admin_id])->delete();
+        $this->ret($result);
+    }
     
     /**
      * 验证是否有权限操作
