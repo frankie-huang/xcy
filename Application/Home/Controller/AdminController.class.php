@@ -796,6 +796,41 @@ class AdminController extends Controller {
         $result['account'] = $account;
         $this->ret($result);
     }
+
+    /**
+     * 更新场馆管理员信息
+     */
+    public function update_gym_admin()
+    {
+        $admin_weight = session('admin_weight');
+        $u_id = session('u_id');
+        $post = I('post.');
+        $gym_admin_id = $post['gym_admin_id'];
+
+        $db = M();
+        $get_role = $db->table('gym_admin')->field('role_id')->where(['gym_admin_id' => $gym_admin_id])->find();
+        $get_gym_id = $db->table('gym_role')->field('gym_id')->where(['role_id' => $get_role['role_id']])->find();
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 1)) {
+            $this->ret($result, 0, '无权限进行操作');
+        }
+
+        $update_data = [];
+        if (isset($post['role_id'])) {
+            $update_data['role_id'] = $post['role_id'];
+        }
+        if (isset($post['name'])) {
+            $update_data['name'] = $post['name'];
+        }
+        if (isset($post['password'])) {
+            $update_data['password'] = password_hash($post['password'], PASSWORD_BCRYPT);
+        }
+        if (empty($update_data)) {
+            $this->ret($result, 1, '无需要更新的数据');
+        }
+
+        $db->table('gym_admin')->where(['gym_admin_id' => $gym_admin_id])->save($update_data);
+        $this->ret($result);
+    }
     
     /**
      * 验证是否有权限操作
