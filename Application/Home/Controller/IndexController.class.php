@@ -980,9 +980,9 @@ class IndexController extends Controller {
         //     $this->ret($result, -1, '未登录');
         // }
         // $u_id = 1;
-        $order_id = I('post.order_id');
-        $star = I('post.star');
-        $content = I('post.content');
+        // $order_id = I('post.order_id');
+        // $star = I('post.star');
+        // $content = I('post.content');
         // $time = date('y-m-d H:i:s',time());
 
         $data['u_id'] = $u_id;
