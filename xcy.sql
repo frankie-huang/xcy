@@ -134,9 +134,8 @@ CREATE TABLE `gym_operation` (
 INSERT INTO `gym_operation` (`label`) VALUES
 ('角色管理权限'),
 ('修改场馆信息'),
-('查看场馆评论'),
-('查看订单'),
-('管理场馆场地');
+('管理场馆场地'),
+('查看订单');
 
 -- 场馆角色
 CREATE TABLE `gym_role` (

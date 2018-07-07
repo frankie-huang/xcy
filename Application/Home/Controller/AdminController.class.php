@@ -397,7 +397,7 @@ class AdminController extends Controller {
         if ($admin_weight < 1) {
             $this->ret($result, 0, '无权限');
         }
-        if (!$this->can_do($u_id, $admin_weight, $gym_id, 5)) {
+        if (!$this->can_do($u_id, $admin_weight, $gym_id, 3)) {
             $this->ret($result, 0, '无权限进行操作');
         }
 
@@ -429,7 +429,7 @@ class AdminController extends Controller {
 
         $db = M();
         $get_gym_id = $db->table('gym_site')->field('gym_id')->where(['gym_site_id' => $gym_site_id])->find();
-        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 5)) {
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 3)) {
             $this->ret($result, 0, '无权限进行操作');
         }
 
@@ -462,7 +462,7 @@ class AdminController extends Controller {
 
         $db = M();
         $get_gym_id = $db->table('gym_site')->field('gym_id')->where(['gym_site_id' => $gym_site_id])->find();
-        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 5)) {
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 3)) {
             $this->ret($result, 0, '无权限进行操作');
         }
 
@@ -503,7 +503,7 @@ class AdminController extends Controller {
         }
         $db = M();
         $get_gym_id = $db->table('gym_site')->field('gym_id')->where(['gym_site_id' => $gym_site_id])->find();
-        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 5)) {
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 3)) {
             $this->ret($result, 0, '无权限进行操作');
         }
 
@@ -536,7 +536,7 @@ class AdminController extends Controller {
         $db = M();
         $get_gym_site = $db->table('gym_site_time')->field('gym_site_id')->where(['gym_site_time_id' => $gym_site_time_id])->find();
         $get_gym_id = $db->table('gym_site')->field('gym_id')->where(['gym_site_id' => $get_gym_site['gym_site_id']])->find();
-        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 5)) {
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 3)) {
             $this->ret($result, 0, '无权限进行操作');
         }
 
@@ -573,7 +573,7 @@ class AdminController extends Controller {
         $db = M();
         $get_gym_site = $db->table('gym_site_time')->field('gym_site_id')->where(['gym_site_time_id' => $gym_site_time_id])->find();
         $get_gym_id = $db->table('gym_site')->field('gym_id')->where(['gym_site_id' => $get_gym_site['gym_site_id']])->find();
-        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 5)) {
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 3)) {
             $this->ret($result, 0, '无权限进行操作');
         }
 
@@ -584,6 +584,18 @@ class AdminController extends Controller {
         }
 
         $db->table('gym_site_time')->where(['gym_site_time_id' => $gym_site_time_id])->delete();
+        $this->ret($result);
+    }
+
+    /**
+     * 获取角色可选的权限操作列表
+     */
+    public function get_gym_operation()
+    {
+        $result['gym_operation_list'] = M('gym_operation')->select();
+        for ($i = 0, $len = count($result['gym_operation_list']); $i < $len; $i++) {
+            $result['gym_operation_list'][$i]['key'] = $i;
+        }
         $this->ret($result);
     }
 
