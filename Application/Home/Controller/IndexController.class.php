@@ -975,7 +975,7 @@ class IndexController extends Controller {
      * 用户评价一个订单
      */
     public function comment_order() {
-        $u_id = session('u_id');
+        // $u_id = session('u_id');
         // if ($u_id == null) {
         //     $this->ret($result, -1, '未登录');
         // }
@@ -985,22 +985,22 @@ class IndexController extends Controller {
         $content = I('post.content');
         $time = date('y-m-d H:i:s',time());
 
-        // $data['u_id'] = $u_id;
-        // $data['order_id'] = $order_id;
-        // $data['star'] = $star;
-        // $data['content'] = $content;
-        // $data['comment_time'] = $time;
+        $data['u_id'] = $u_id;
+        $data['order_id'] = $order_id;
+        $data['star'] = $star;
+        $data['content'] = $content;
+        $data['comment_time'] = $time;
 
-        // $add_comment = M('comment')
-        //     ->add($data);
+        $add_comment = M('comment')
+            ->add($data);
         
 
-        // $gym = M('order_site')
-        //     ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
-        //     ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id','LEFT')
-        //     ->where(['order_site.order_id' => $order_id])
-        //     ->find();
-        // $gym_id = $gym['gym_id'];
+        $gym = M('order_site')
+            ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
+            ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id','LEFT')
+            ->where(['order_site.order_id' => $order_id])
+            ->find();
+        $gym_id = $gym['gym_id'];
         
 
 
