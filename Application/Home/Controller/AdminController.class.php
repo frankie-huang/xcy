@@ -401,6 +401,10 @@ class AdminController extends Controller {
             $this->ret($result, 0, '无权限进行操作');
         }
 
+        if (!in_array($type_id, ['0', '1', '2', '3', '4', '5', '6', '7'])) {
+            $this->ret($result, 0, '添加场地时type_id范围只能为0-7');            
+        }
+
         $db_site = M('gym_site');
         $data = [
             'gym_id' => $gym_id,
@@ -899,7 +903,35 @@ class AdminController extends Controller {
         }
         $get_order_list = $get_order_list->select();
 
-        dump($get_order_list);
+        $gym_list = [];
+        $order_list = [];
+        $type_map = [
+            '羽毛球',
+            '篮球',
+            '足球',
+            '游泳',
+            '健身',
+            '网球',
+            '台球',
+            '其他',
+        ];
+        for ($i = 0, $len = count($get_order_list); $i < $len; $i++) {
+            if (!isset($gym_list[$get_order_list[$i]['order_id']])) {
+                $gym_list[$get_order_list[$i]['order_id']] = count($order_list);
+                $order_list[] = [
+                    'order_id' => $get_order_list[$i]['order_id'],
+                    'user' => $get_order_list[$i]['user'],
+                    'gym_id' => $get_order_list[$i]['gym_id'],
+                    'gym_name' => $get_order_list[$i]['gym_name'],
+                    'amount' => $get_order_list[$i]['amount'],
+                    'success_time' => $get_order_list[$i]['success_time'],
+                    'detail' => '',
+                ];
+            }
+            $order_index = $gym_list[$get_order_list[$i]['order_id']];
+            $order_list[$order_index]['detail'] .= $get_order_list[$i]['gym_site_name'] . '(' . $type_map[$get_order_list[$i]['type_id']] . ') ' . $get_order_list[$i]['date'] . ' ' . $get_order_list[$i]['start_time'] . '-' . $get_order_list[$i]['end_time'] . ' ';
+        }
+        dump($order_list);
     }
     
     /**
