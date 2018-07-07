@@ -985,54 +985,54 @@ class IndexController extends Controller {
         $content = I('post.content');
         $time = date('y-m-d H:i:s',time());
 
-        $data['u_id'] = $u_id;
-        $data['order_id'] = $order_id;
-        $data['star'] = $star;
-        $data['content'] = $content;
-        $data['comment_time'] = $time;
+        // $data['u_id'] = $u_id;
+        // $data['order_id'] = $order_id;
+        // $data['star'] = $star;
+        // $data['content'] = $content;
+        // $data['comment_time'] = $time;
 
-        $add_comment = M('comment')
-            ->add($data);
+        // $add_comment = M('comment')
+        //     ->add($data);
         
 
-        $gym = M('order_site')
-            ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
-            ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id','LEFT')
-            ->where(['order_site.order_id' => $order_id])
-            ->find();
-        $gym_id = $gym['gym_id'];
-        
-
-
-
-        // $comment_list = M('comment')
-        //     ->join('order_site on order_site.order_id = comment.order_id','LEFT')
+        // $gym = M('order_site')
         //     ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
         //     ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id','LEFT')
-        //     ->where(['gym_site.gym_id' => $gym_id])
-        //     ->field([
-        //         'comment_id',
-        //         'comment.star'
-        //     ])
-        //     ->distinct(true)
-        //     ->select();
+        //     ->where(['order_site.order_id' => $order_id])
+        //     ->find();
+        // $gym_id = $gym['gym_id'];
         
-        // $new_star_total = 0;
-        // for ($i = 0, $len = count($comment_list); $i < $len; $i++) {
-        //     $new_star_total += (int)$comment_list[$i]['star'];
-        // }
-        // $new_star = (int)$new_star_total/$len;
-        
-        // // 更新评分
-        // M('gym')->where(['gym.gym_id' => $gym_id])->setField('star',$new_star);
 
 
-        // if($add_comment){
-        //     $result['comment_time'] = $time;
-        //     $this->ret($result);
-        // } else {
-        //     $this->ret($result, 0, '出错');
-        // }
+
+        $comment_list = M('comment')
+            ->join('order_site on order_site.order_id = comment.order_id','LEFT')
+            ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
+            ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id','LEFT')
+            ->where(['gym_site.gym_id' => $gym_id])
+            ->field([
+                'comment_id',
+                'comment.star'
+            ])
+            ->distinct(true)
+            ->select();
+        
+        $new_star_total = 0;
+        for ($i = 0, $len = count($comment_list); $i < $len; $i++) {
+            $new_star_total += (int)$comment_list[$i]['star'];
+        }
+        $new_star = (int)$new_star_total/$len;
+        
+        // 更新评分
+        M('gym')->where(['gym.gym_id' => $gym_id])->setField('star',$new_star);
+
+
+        if($add_comment){
+            $result['comment_time'] = $time;
+            $this->ret($result);
+        } else {
+            $this->ret($result, 0, '出错');
+        }
     }
 
     /**
