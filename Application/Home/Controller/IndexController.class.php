@@ -314,9 +314,9 @@ class IndexController extends Controller {
     public function get_my_historical_gym() {
         // 读取session里面的u_id，用作查询数据表的筛选条件
         $u_id = session('u_id');
-        // if ($u_id == null) {
-        //     $this->ret($result, -1, '未登录');
-        // }
+        if ($u_id == null) {
+            $this->ret($result, -1, '未登录');
+        }
         $gym_list = M('book_order')
             ->join('order_site on order_site.order_id = book_order.order_id','LEFT')
             ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
@@ -578,10 +578,10 @@ class IndexController extends Controller {
         // $id_list = [1,2,3];
 
         $u_id = session('u_id');
-        // if ($u_id == null) {
-        //     $this->ret($result, -1, '未登录');
-        // }
-        // $u_id =1;
+        if ($u_id == null) {
+            $this->ret($result, -1, '未登录');
+        }
+        $u_id =1;
         $db_gym = M('gym_site_time');
         $amount = 0;
         for($i = 0, $len = count($id_list); $i < $len; $i++){
@@ -609,7 +609,7 @@ class IndexController extends Controller {
         }
         $new_balance = (int)$user['balance']-(int)$amount;
         M('user')->where(['user.u_id' => $u_id])->setField('balance',$new_balance);
-        $time = date('y-m-d H:i:s',time());
+        $time = date('Y-m-d H:i:s',time());
         $data['success_time'] = $time;
         $data['u_id'] = $u_id;
         $data['amount'] = $amount;
@@ -631,10 +631,10 @@ class IndexController extends Controller {
      */
     public function get_message_list() {
         $u_id = session('u_id');
-        // if ($u_id == null) {
-        //     $this->ret($result, -1, '未登录');
-        // }
-        // $u_id = 1;
+        if ($u_id == null) {
+            $this->ret($result, -1, '未登录');
+        }
+        $u_id = 1;
         $is_read = I('get.is_read');
 
         M('message')->where(['u_id' => $u_id])->setField('is_read','1');
@@ -708,9 +708,9 @@ class IndexController extends Controller {
         // $order_list = 
 
         $u_id = session('u_id');
-        // if ($u_id == null) {
-        //     $this->ret($result, -1, '未登录');
-        // }
+        if ($u_id == null) {
+            $this->ret($result, -1, '未登录');
+        }
         $gym_list = M('book_order')
             ->join('order_site on order_site.order_id = book_order.order_id','LEFT')
             ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
@@ -953,13 +953,13 @@ class IndexController extends Controller {
      */
     public function to_be_merchant() {
         $u_id = session('u_id');
-        // if ($u_id == null) {
-        //     $this->ret($result, -1, '未登录');
-        // }
+        if ($u_id == null) {
+            $this->ret($result, -1, '未登录');
+        }
         $data['u_id'] = $u_id;
-        $data['apply_time'] = date('y-m-d H:i:s',time());
+        $data['apply_time'] = date('Y-m-d H:i:s',time());
         $data['status'] = 0;
-        $data['last_time'] = date('y-m-d H:i:s',time());
+        $data['last_time'] = date('Y-m-d H:i:s',time());
 
         $add_result = M('apply_list')
             ->add($data);
@@ -976,14 +976,14 @@ class IndexController extends Controller {
      */
     public function comment_order() {
         $u_id = session('u_id');
-        // if ($u_id == null) {
-        //     $this->ret($result, -1, '未登录');
-        // }
-        // $u_id = 1;
+        if ($u_id == null) {
+            $this->ret($result, -1, '未登录');
+        }
+        $u_id = 1;
         $order_id = I('post.order_id');
         $star = I('post.star');
         $content = I('post.content');
-        $time = date('y-m-d H:i:s',time());
+        $time = date('Y-m-d H:i:s',time());
 
         $data['u_id'] = $u_id;
         $data['order_id'] = $order_id;
@@ -1077,15 +1077,15 @@ class IndexController extends Controller {
      */
     public function recharge(){
         $u_id = session('u_id');
-        // if ($u_id == null) {
-        //     $this->ret($result, -1, '未登录');
-        // }
+        if ($u_id == null) {
+            $this->ret($result, -1, '未登录');
+        }
         $number = I('get.number');
 
 
         $data['u_id'] = $u_id;
         $data['amount'] = $number;
-        $data['recharge_time'] = date('y-m-d H:i:s',time());
+        $data['recharge_time'] = date('Y-m-d H:i:s',time());
         $user = M('user')->where(['user.u_id' => $u_id])->find();
 
         $new_balance = (int)$user['balance']+(int)$number;
