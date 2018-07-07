@@ -862,12 +862,24 @@ class AdminController extends Controller {
         $post = I('post.');
 
         $db = M();
+        // $get_role = $db->table('gym_admin')->field('role_id')->where(['gym_admin_id' => $gym_admin_id])->find();
+        // $get_gym_id = $db->table('gym_role')->field('gym_id')->where(['role_id' => $get_role['role_id']])->find();
+        // if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 1)) {
+        //     $this->ret($result, 0, '无权限进行操作');
+        // }
+
         $get_order_list = $db->table('book_order')
             ->field([
                 'book_order.order_id',
                 'phone_number' => 'user',
                 'gym.gym_id',
                 'gym.gym_name',
+                'gym_site.gym_site_id' => 'gym_site_id',
+                'gym_site.type_id',
+                'gym_site.name' => 'gym_site_name',
+                'date',
+                'start_time',
+                'end_time',
                 'amount',
                 'success_time',
             ])
