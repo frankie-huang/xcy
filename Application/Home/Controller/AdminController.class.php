@@ -397,7 +397,7 @@ class AdminController extends Controller {
         if ($admin_weight < 1) {
             $this->ret($result, 0, '无权限');
         }
-        if (!$this->can_do($u_id, $admin_weight, $gym_id, 5)) {
+        if (!$this->can_do($u_id, $admin_weight, $gym_id, 3)) {
             $this->ret($result, 0, '无权限进行操作');
         }
 
@@ -429,7 +429,7 @@ class AdminController extends Controller {
 
         $db = M();
         $get_gym_id = $db->table('gym_site')->field('gym_id')->where(['gym_site_id' => $gym_site_id])->find();
-        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 5)) {
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 3)) {
             $this->ret($result, 0, '无权限进行操作');
         }
 
@@ -462,7 +462,7 @@ class AdminController extends Controller {
 
         $db = M();
         $get_gym_id = $db->table('gym_site')->field('gym_id')->where(['gym_site_id' => $gym_site_id])->find();
-        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 5)) {
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 3)) {
             $this->ret($result, 0, '无权限进行操作');
         }
 
@@ -503,7 +503,7 @@ class AdminController extends Controller {
         }
         $db = M();
         $get_gym_id = $db->table('gym_site')->field('gym_id')->where(['gym_site_id' => $gym_site_id])->find();
-        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 5)) {
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 3)) {
             $this->ret($result, 0, '无权限进行操作');
         }
 
@@ -536,7 +536,7 @@ class AdminController extends Controller {
         $db = M();
         $get_gym_site = $db->table('gym_site_time')->field('gym_site_id')->where(['gym_site_time_id' => $gym_site_time_id])->find();
         $get_gym_id = $db->table('gym_site')->field('gym_id')->where(['gym_site_id' => $get_gym_site['gym_site_id']])->find();
-        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 5)) {
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 3)) {
             $this->ret($result, 0, '无权限进行操作');
         }
 
@@ -573,7 +573,7 @@ class AdminController extends Controller {
         $db = M();
         $get_gym_site = $db->table('gym_site_time')->field('gym_site_id')->where(['gym_site_time_id' => $gym_site_time_id])->find();
         $get_gym_id = $db->table('gym_site')->field('gym_id')->where(['gym_site_id' => $get_gym_site['gym_site_id']])->find();
-        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 5)) {
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 3)) {
             $this->ret($result, 0, '无权限进行操作');
         }
 
@@ -584,6 +584,51 @@ class AdminController extends Controller {
         }
 
         $db->table('gym_site_time')->where(['gym_site_time_id' => $gym_site_time_id])->delete();
+        $this->ret($result);
+    }
+
+    /**
+     * 获取角色可选的权限操作列表
+     */
+    public function get_gym_operation()
+    {
+        $result['gym_operation_list'] = M('gym_operation')->select();
+        for ($i = 0, $len = count($result['gym_operation_list']); $i < $len; $i++) {
+            $result['gym_operation_list'][$i]['key'] = $i;
+        }
+        $this->ret($result);
+    }
+
+    /**
+     * 获取场馆角色列表
+     */
+    public function get_gym_role_list()
+    {
+        $admin_weight = session('admin_weight');
+        $u_id = session('u_id');
+        $gym_id = I('get.gym_id');
+
+        if (!$this->can_do($u_id, $admin_weight, $gym_id, 1)) {
+            $this->ret($result, 0, '当前登录者无权限查看角色列表');
+        }
+
+        $db = M();
+        $get_operation_list = $db->table('gym_operation')->select();
+        $get_role_list = $db->table('gym_role')->field('role_id, name, operation_list')->where(['gym_id' => $gym_id])->select();
+        for ($i = 0, $len = count($get_role_list); $i < $len; $i++) {
+            $get_role_list[$i]['key'] = $i;
+            $operation_list = explode('|', $get_role_list[$i]['operation_list']);
+            $get_role_list[$i]['operation_list'] = [];
+            for ($j = 0, $len_j = count($operation_list); $j < $len_j; $j++) {
+                $get_role_list[$i]['operation_list'][] = [
+                    'key' => $j,
+                    'operation_id' => $get_operation_list[$operation_list[$j] -1]['operation_id'],
+                    'label' => $get_operation_list[$operation_list[$j] -1]['label']
+                ];
+            }
+        }
+
+        $result['gym_role_list'] = $get_role_list;
         $this->ret($result);
     }
 
@@ -632,6 +677,88 @@ class AdminController extends Controller {
     }
 
     /**
+     * 更新场馆角色信息
+     */
+    public function update_gym_role()
+    {
+        $admin_weight = session('admin_weight');
+        $u_id = session('u_id');
+        $post = I('post.');
+        $role_id = $post['role_id'];
+
+        $db = M();
+        $get_gym_id = $db->table('gym_role')->field('gym_id')->where(['role_id' => $role_id])->find();
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 1)) {
+            $this->ret($result, 0, '无权限进行操作');
+        }
+
+        $update_data = [];
+        if (isset($post['name'])) {
+            $update_data['name'] = $post['name'];
+        }
+        if (isset($post['operation_list'])) {
+            $update_data['operation_list'] = implode('|', $post['operation_list']);
+        }
+        if (empty($update_data)) {
+            $this->ret($result, 1, '无需要更新的数据');
+        }
+
+        $db->table('gym_role')->where(['role_id' => $role_id])->save($update_data);
+        $this->ret($result);
+    }
+
+    /**
+     * 删除场馆角色
+     */
+    public function delete_gym_role()
+    {
+        $role_id = I('post.role_id');
+        $admin_weight = session('admin_weight');
+        $u_id = session('u_id');
+
+        $db = M();
+        $get_gym_id = $db->table('gym_role')->field('gym_id')->where(['role_id' => $role_id])->find();
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 1)) {
+            $this->ret($result, 0, '无权限进行操作');
+        }
+
+        $db->table('gym_role')->where(['role_id' => $role_id])->delete();
+        $this->ret($result);
+    }
+
+    /**
+     * 获取场馆管理员列表
+     */
+    public function get_gym_admin_list()
+    {
+        $admin_weight = session('admin_weight');
+        $u_id = session('u_id');
+        $gym_id = I('get.gym_id');
+
+        if (!$this->can_do($u_id, $admin_weight, $gym_id, 1)) {
+            $this->ret($result, 0, '当前登录者无权限查看管理员列表');
+        }
+
+        $db = M();
+        $gym_admin_list = $db->table('gym_admin')
+            ->field('gym_admin_id, account, gym_admin.name, gym_role.role_id, gym_role.name AS role_name')
+            ->join('gym_role on gym_role.role_id = gym_admin.role_id', 'LEFT')
+            ->where(['gym_id' => $gym_id])
+            ->select();
+        for ($i = 0, $len = count($gym_admin_list); $i < $len; $i++) {
+            $gym_admin_list[$i]['key'] = $i;
+            $gym_admin_list[$i]['role'] = [
+                'role_id' => $gym_admin_list[$i]['role_id'],
+                'name' => $gym_admin_list[$i]['role_name'],
+            ];
+            unset($gym_admin_list[$i]['role_id']);
+            unset($gym_admin_list[$i]['role_name']);
+        }
+        $result['gym_admin_list'] = $gym_admin_list;
+        $this->ret($result);
+    }
+
+    /**
      * 添加管理员账号
      */
     public function add_gym_admin() {
@@ -669,6 +796,99 @@ class AdminController extends Controller {
         $result['account'] = $account;
         $this->ret($result);
     }
+
+    /**
+     * 更新场馆管理员信息
+     */
+    public function update_gym_admin()
+    {
+        $admin_weight = session('admin_weight');
+        $u_id = session('u_id');
+        $post = I('post.');
+        $gym_admin_id = $post['gym_admin_id'];
+
+        $db = M();
+        $get_role = $db->table('gym_admin')->field('role_id')->where(['gym_admin_id' => $gym_admin_id])->find();
+        $get_gym_id = $db->table('gym_role')->field('gym_id')->where(['role_id' => $get_role['role_id']])->find();
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 1)) {
+            $this->ret($result, 0, '无权限进行操作');
+        }
+
+        $update_data = [];
+        if (isset($post['role_id'])) {
+            $update_data['role_id'] = $post['role_id'];
+        }
+        if (isset($post['name'])) {
+            $update_data['name'] = $post['name'];
+        }
+        if (isset($post['password'])) {
+            $update_data['password'] = password_hash($post['password'], PASSWORD_BCRYPT);
+        }
+        if (empty($update_data)) {
+            $this->ret($result, 1, '无需要更新的数据');
+        }
+
+        $db->table('gym_admin')->where(['gym_admin_id' => $gym_admin_id])->save($update_data);
+        $this->ret($result);
+    }
+
+    /**
+     * 删除场馆管理员
+     */
+    public function delete_gym_admin()
+    {
+        $gym_admin_id = I('post.gym_admin_id');
+        $admin_weight = session('admin_weight');
+        $u_id = session('u_id');
+
+        $db = M();
+        $get_role = $db->table('gym_admin')->field('role_id')->where(['gym_admin_id' => $gym_admin_id])->find();
+        $get_gym_id = $db->table('gym_role')->field('gym_id')->where(['role_id' => $get_role['role_id']])->find();
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 1)) {
+            $this->ret($result, 0, '无权限进行操作');
+        }
+
+        $db->table('gym_admin')->where(['gym_admin_id' => $gym_admin_id])->delete();
+        $this->ret($result);
+    }
+
+    /**
+     * 获取订场的订单列表
+     */
+    public function get_order_list()
+    {
+        $admin_weight = session('admin_weight');
+        $u_id = session('u_id');
+        $post = I('post.');
+
+        $db = M();
+        $get_order_list = $db->table('book_order')
+            ->field([
+                'book_order.order_id',
+                'phone_number' => 'user',
+                'gym.gym_id',
+                'gym.gym_name',
+                'amount',
+                'success_time',
+            ])
+            ->join('order_site on order_site.order_id = book_order.order_id')
+            ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id')
+            ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id')
+            ->join('gym on gym.gym_id = gym_site.gym_id')
+            ->join('user on user.u_id = book_order.u_id');
+        if (!empty($post['gym_id'])) {
+            $get_order_list = $get_order_list->where(['gym.gym_id' => $post['gym_id']]);
+        }
+        if ($post['type_id'] == '0' || !empty($post['type_id'])) {
+            $get_order_list = $get_order_list->where(['gym_site.type_id' => $post['type_id']]);
+        }
+        if (!empty($post['city_id'])) {
+            $get_order_list = $get_order_list->where(['gym.city_id' => $post['city_id']]);
+        }
+        $get_order_list = $get_order_list->select();
+
+        dump($get_order_list);
+    }
     
     /**
      * 验证是否有权限操作
@@ -680,6 +900,9 @@ class AdminController extends Controller {
      */
     private function can_do($u_id, $admin_weight, $gym_id, $operation_id = 0) {
         $db = M();
+        if (empty($admin_weight)) {
+            return false;
+        }
         if ($admin_weight < 10) {
             if ($admin_weight == 1) {
                 // 商家管理员
