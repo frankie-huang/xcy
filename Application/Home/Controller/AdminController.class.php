@@ -641,6 +641,9 @@ class AdminController extends Controller
             $this->ret($result, 0, '无权限进行操作');
         }
 
+        if (empty($date)) {
+            $this->ret($result, 0, '日期不能为空');
+        }
         $date = date('Y-m-d', $data);
         if (preg_match('/^\d{2}:\d{2}$/', $start_time) == 0 || preg_match('/^\d{2}:\d{2}$/', $end_time) == 0) {
             $this->ret($result, 0, '时间格式须为 xx:xx');
