@@ -601,7 +601,7 @@ class AdminController extends Controller
         $get_list = $db->table('gym_site_time')
             ->field([
                 'gym_site_time_id',
-                'date' => 'UNIX_TIMESTAMP(date)',
+                'date',
                 'start_time',
                 'end_time',
                 'price',
@@ -611,6 +611,7 @@ class AdminController extends Controller
             ->select();
         for ($i = 0, $len = count($get_list); $i < $len; $i++) {
             $get_list[$i]['key'] = $i;
+            $get_list[$i]['date'] = strtotime($get_list[$i]['date']);
         }
         $result['list'] = $get_list;
         $this->ret($result);
