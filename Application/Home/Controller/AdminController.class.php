@@ -1210,6 +1210,30 @@ class AdminController extends Controller
     }
 
     /**
+     * 获取后台系统操作日志列表
+     */
+    public function get_log_list()
+    {
+        $u_id = session('u_id');
+        $admin_weight = session('admin_weight');
+        $get = I('get.');
+        if ($admin_weight < 10) {
+            $this->ret($result, 0, '只有超管可以查看操作日志');
+        }
+
+        $get_log_list = M('log')->field('log_id, u_id, account, operation_detail, time');
+        if (!empty($get['u_id'])) {
+            $get_log_list = $get_log_list->where(['u_id' => $get['u_id']]);
+        }
+        $get_log_list = $get_log_list->select();
+        for ($i = 0, $len = count($get_log_list); $i < $len; $i++) {
+            $get_log_list[$i]['key'] = $i;
+        }
+        $result['list'] = $get_log_list;
+        $this->ret($result);
+    }
+
+    /**
      * 验证是否有权限操作
      * @param int $u_id 用户id
      * @param int $admin_weight 权限权重，0、1、2、10
