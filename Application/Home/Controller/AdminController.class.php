@@ -1274,7 +1274,7 @@ class AdminController extends Controller
             $is_admin = 0;
             $account = $get_user['phone_number'];
         }
-        $db->add([
+        $db->table('log')->add([
             'u_id' => $u_id,
             'is_admin' => $is_admin,
             'account' => $account,
