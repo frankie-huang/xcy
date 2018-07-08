@@ -1107,7 +1107,31 @@ class AdminController extends Controller {
             $string .= $chars[mt_rand(0, strlen($chars) - 1)];
         }
         return $string;
-    } 
+    }
+
+    /**
+     * 用于记录后台管理系统的各种操作日志
+     */
+    private function record_log($u_id, $admin_weight, $detail)
+    {
+        $db = M();
+        if ($admin_weight == 1) {
+            $get_admin = $db->table('gym_admin')->field('account')->where(['gym_admin_id' => $u_id])->find();
+            $is_admin = 1;
+            $account = $get_admin['account'];
+        } else {
+            $get_user = $db->table('user')->field('phone_number')->where(['u_id' => $u_id])->find();
+            $is_admin = 0;
+            $account = $get_user['phone_number'];
+        }
+        $db->add([
+            'u_id' => $u_id,
+            'is_admin' => $is_admin,
+            'account' => $account,
+            'operation_detail' => $detail,
+            'time' => date('Y-m-d H:i:s'),
+        ]);
+    }
 
     private function ret(&$result, $status = 1, $msg = "") {
         $result['status'] = $status;

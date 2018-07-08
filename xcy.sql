@@ -161,6 +161,8 @@ CREATE TABLE `gym_admin` (
 CREATE TABLE `log` (
     `log_id` int(10) PRIMARY KEY AUTO_INCREMENT COMMENT "日志ID",
     `u_id` int(10) COMMENT "操作者的用户ID",
+    `is_admin` int(1) COMMENT "是否商户管理员，0为否，1为是",
+    `account` varchar(200) COMMENT "账号名，手机号或者管理员账号",
     `operation_detail` text COMMENT "操作细节，包括但不限于登录，审批商户，商户添加修改删除场馆信息等",
     `time` datetime COMMENT "操作时间",
     FOREIGN KEY (`u_id`) REFERENCES `user` (`u_id`) ON DELETE CASCADE
