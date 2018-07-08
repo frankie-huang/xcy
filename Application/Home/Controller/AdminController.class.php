@@ -177,7 +177,7 @@ class AdminController extends Controller
             $this->ret($result, 0, '该用户已经是当前权限');
         }
         $db->where(['u_id' => $post['u_id']])->setField('admin_weight', $post['admin_weight']);
-        
+
         $this->record_log($u_id, $admin_weight, '将u_id为' . $post['u_id'] . '的用户改变为' . $admin_weight_map[$post['admin_weight']]);
         $this->ret($result);
     }
@@ -539,7 +539,7 @@ class AdminController extends Controller
         }
 
         $db->table('gym_site')->where(['gym_site_id' => $gym_site_id])->save($update_data);
-        $this->record_log($u_id, $admin_weight, '更新了场馆id为'. $get_gym_id['gym_id'] . '的场馆的某个场地信息，场地id为' . $gym_site_id);
+        $this->record_log($u_id, $admin_weight, '更新了场馆id为' . $get_gym_id['gym_id'] . '的场馆的某个场地信息，场地id为' . $gym_site_id);
         $this->ret($result);
     }
 
