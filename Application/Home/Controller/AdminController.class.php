@@ -88,7 +88,6 @@ class AdminController extends Controller
             // 返回数据
             $result['account'] = $user_info['account'];
             $result['admin_weight'] = 1;
-            $this->ret($result);
         } else {
             // 手机号登录
             $db_user = M('user');
@@ -110,8 +109,9 @@ class AdminController extends Controller
             // 返回数据
             $result['account'] = $user_info['phone_number'];
             $result['admin_weight'] = $user_info['admin_weight'];
-            $this->ret($result);
         }
+        $this->record_log(session('u_id'), session('admin_weight'), '登录后台管理系统');
+        $this->ret($result);
     }
 
     /**
@@ -155,6 +155,12 @@ class AdminController extends Controller
         $admin_weight = session('admin_weight');
         $post = I('post.');
 
+        $admin_weight_map = [
+            '0' => '普通用户',
+            '2' => '商家BOSS',
+            '10' => '超级管理员',
+        ];
+
         if ($admin_weight < 10) {
             $this->ret($result, 0, '只有超管有权限改变用户权限');
         }
@@ -171,6 +177,8 @@ class AdminController extends Controller
             $this->ret($result, 0, '该用户已经是当前权限');
         }
         $db->where(['u_id' => $post['u_id']])->setField('admin_weight', $post['admin_weight']);
+        
+        $this->record_log($u_id, $admin_weight, '将u_id为' . $post['u_id'] . '的用户改变为' . $admin_weight_map[$post['admin_weight']]);
         $this->ret($result);
     }
 
@@ -387,6 +395,7 @@ class AdminController extends Controller
         } else {
             $result['gym_id'] = $last_id;
             $result['register_time'] = ($db_gym->field('register_time')->where(['gym_id' => $last_id])->find())['register_time'];
+            $this->record_log($u_id, $admin_weight, '新建了场馆，场馆id为' . $last_id);
             $this->ret($result);
         }
     }
@@ -429,6 +438,7 @@ class AdminController extends Controller
         }
 
         M('gym')->where(['gym_id' => $gym_id])->save($update_data);
+        $this->record_log($u_id, $admin_weight, '更新了场馆信息，场馆id为' . $gym_id);
         $this->ret($result);
     }
 
@@ -446,6 +456,7 @@ class AdminController extends Controller
         }
 
         M('gym')->where(['gym_id' => $gym_id])->setField('is_delete', '1');
+        $this->record_log($u_id, $admin_weight, '删除了场馆，场馆id为' . $gym_id);
         $this->ret($result);
     }
 
@@ -492,6 +503,7 @@ class AdminController extends Controller
             $this->ret($result, 0, '数据库插入出错');
         } else {
             $result['gym_site_id'] = $last_id;
+            $this->record_log($u_id, $admin_weight, '为场馆id为' . $gym_id . '的场馆新建了场地，场地id为' . $last_id);
             $this->ret($result);
         }
     }
@@ -527,6 +539,7 @@ class AdminController extends Controller
         }
 
         $db->table('gym_site')->where(['gym_site_id' => $gym_site_id])->save($update_data);
+        $this->record_log($u_id, $admin_weight, '更新了场馆id为'. $get_gym_id['gym_id'] . '的场馆的某个场地信息，场地id为' . $gym_site_id);
         $this->ret($result);
     }
 
@@ -559,6 +572,7 @@ class AdminController extends Controller
         }
 
         $db->table('gym_site')->where(['gym_site_id' => $gym_site_id])->delete();
+        $this->record_log($u_id, $admin_weight, '删除了场馆id为' . $get_gym_id['gym_id'] . '的场馆的一个场地，被删场地id为' . $gym_site_id);
         $this->ret($result);
     }
 
@@ -645,6 +659,7 @@ class AdminController extends Controller
             $this->ret($result, 0, '数据库插入出错');
         } else {
             $result['gym_site_time_id'] = $last_id;
+            $this->record_log($u_id, $admin_weight, '为场地id为' . $gym_site_id . '的场地新增了场次信息，场次id为' . $last_id);
             $this->ret($result);
         }
     }
@@ -684,6 +699,7 @@ class AdminController extends Controller
         }
 
         $db->table('gym_site_time')->where(['gym_site_time_id' => $gym_site_time_id])->save($update_data);
+        $this->record_log($u_id, $admin_weight, '更新了场地id为' . $get_gym_site['gym_site_id'] . '的场地的某个场次信息，场次id为' . $gym_site_time_id);
         $this->ret($result);
     }
 
@@ -710,6 +726,7 @@ class AdminController extends Controller
         }
 
         $db->table('gym_site_time')->where(['gym_site_time_id' => $gym_site_time_id])->delete();
+        $this->record_log($u_id, $admin_weight, '删除了场地id为' . $get_gym_site['gym_site_id'] . '的场地的一个场次信息，场次id为' . $gym_site_time_id);
         $this->ret($result);
     }
 
@@ -778,9 +795,7 @@ class AdminController extends Controller
             $this->ret($result, 0, '请为角色分配至少一个权限');
         }
         $db_role = M('gym_role');
-        $get_gym_admin = $db_role->table('gym_admin')->field('role_id')->where(['gym_admin_id' => $u_id])->find();
-        $get_gym_role = $db_role->field('gym_id')->where(['role_id' => $get_gym_admin['role_id']])->find();
-        if (!$this->can_do($u_id, $admin_weight, $get_gym_role['gym_id'], 1)) {
+        if (!$this->can_do($u_id, $admin_weight, $gym_id, 1)) {
             $this->ret($result, 0, '无权限进行操作');
         }
 
@@ -802,6 +817,7 @@ class AdminController extends Controller
             'operation_list' => implode('|', $operation_list),
         ];
         $get_id = $db_role->add($data);
+        $this->record_log($u_id, $admin_weight, '为场馆id为' . $gym_id . '场馆新增一个角色，角色id为' . $get_id);
         $result['role_id'] = $get_id;
         $this->ret($result);
     }
@@ -834,6 +850,7 @@ class AdminController extends Controller
         }
 
         $db->table('gym_role')->where(['role_id' => $role_id])->save($update_data);
+        $this->record_log($u_id, $admin_weight, '更新场馆id为' . $get_gym_id['gym_id'] . '的场馆的某个角色信息，角色id为' . $role_id);
         $this->ret($result);
     }
 
@@ -853,6 +870,7 @@ class AdminController extends Controller
         }
 
         $db->table('gym_role')->where(['role_id' => $role_id])->delete();
+        $this->record_log($u_id, $admin_weight, '删除了场馆id为' . $get_gym_id['gym_id'] . '的场馆的一个角色信息，角色id为' . $role_id);
         $this->ret($result);
     }
 
@@ -925,6 +943,7 @@ class AdminController extends Controller
         $db_admin->where(['gym_admin_id' => $get_id])->save(['account' => $account]);
         $result['gym_admin_id'] = $get_id;
         $result['account'] = $account;
+        $this->record_log($u_id, $admin_weight, '为场馆id为' . $get_gym_id['gym_id'] . '的场馆新增一个管理员，管理员id为' . $get_id);
         $this->ret($result);
     }
 
@@ -960,6 +979,7 @@ class AdminController extends Controller
         }
 
         $db->table('gym_admin')->where(['gym_admin_id' => $gym_admin_id])->save($update_data);
+        $this->record_log($u_id, $admin_weight, '更新了场馆id为' . $get_gym_id['gym_id'] . '的场馆的某个管理员信息，管理员id为' . $gym_admin_id);
         $this->ret($result);
     }
 
@@ -980,6 +1000,7 @@ class AdminController extends Controller
         }
 
         $db->table('gym_admin')->where(['gym_admin_id' => $gym_admin_id])->delete();
+        $this->record_log($u_id, $admin_weight, '删除了场馆id为' . $get_gym_id['gym_id'] . '的场地的一个管理员，管理员id为' . $gym_admin_id);
         $this->ret($result);
     }
 
@@ -1158,6 +1179,7 @@ class AdminController extends Controller
         $db->where(['apply_id' => $apply_id])->save($update);
         $db->table('user')->where(['u_id' => $get_apply['u_id']])->setField('admin_weight', 2);
         $result['last_time'] = $update['last_time'];
+        $this->record_log($u_id, $admin_weight, '同意了用户id为' . $get_apply['u_id'] . '的用户申请成为商户的请求');
         $this->ret($result);
     }
 
@@ -1181,6 +1203,7 @@ class AdminController extends Controller
         $update['last_time'] = date('Y-m-d H:i:s');
         $db->where(['apply_id' => $apply_id])->save($update);
         $result['last_time'] = $update['last_time'];
+        $this->record_log($u_id, $admin_weight, '拒绝了用户id为' . $get_apply['u_id'] . '的用户申请成为商户的请求');
         $this->ret($result);
     }
 
