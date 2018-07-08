@@ -388,7 +388,7 @@ class AdminController extends Controller {
         $u_id = session('u_id');
         $admin_weight = session('admin_weight');
         $gym_id = I('post.gym_id');
-        $site_name = I('post.name');
+        $site_name = trim(I('post.name'));
         $type_id = I('post.type_id');
         $number = I('post.number');
         if (empty($u_id)) {
@@ -403,6 +403,12 @@ class AdminController extends Controller {
 
         if (!in_array($type_id, ['0', '1', '2', '3', '4', '5', '6', '7'])) {
             $this->ret($result, 0, '添加场地时type_id范围只能为0-7');            
+        }
+        if (empty($site_name)) {
+            $this->ret($result, 0, '场地名称不能留空');
+        }
+        if (!is_numeric($number) || $number < 1) {
+            $this->ret($result, 0, '容纳数量必须是大于0的整数');
         }
 
         $db_site = M('gym_site');
@@ -488,6 +494,43 @@ class AdminController extends Controller {
     }
 
     /**
+     * 获取一个场地的近七天的所有场次
+     */
+    public function get_a_site()
+    {
+        $gym_site_id = I('post.gym_site_id');
+        $admin_weight = session('admin_weight');
+        $u_id = session('u_id');
+
+        $db = M();
+        $get_gym_id = $db->table('gym_site')->field('gym_id')->where(['gym_site_id' => $gym_site_id])->find();
+        if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], true)) {
+            $this->ret($result, 0, '无法查看不属于自己权限范围的场馆的信息');
+        }
+
+        // 获取近七天的日期列表
+        $time  = time();
+        $date = [];
+        for ($i = 0; $i < 7; $i++){
+            $date[$i] = date('Y-m-d', strtotime('+' . $i . ' days', $time));
+        }
+
+        $get_list = $db->table('gym_site_time')
+            ->field([
+                'gym_site_time_id',
+                'date',
+                'start_time',
+                'end_time',
+                'price',
+            ])
+            ->where(['gym_site_id' => $gym_site_id])
+            ->where(['date', ['in', $date]])
+            ->select();
+        $result['list'] = $get_list;
+        $this->ret($result);
+    }
+
+    /**
      * 添加场馆场地的场次信息
      */
     public function add_gym_site_time()
@@ -509,6 +552,13 @@ class AdminController extends Controller {
         $get_gym_id = $db->table('gym_site')->field('gym_id')->where(['gym_site_id' => $gym_site_id])->find();
         if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 3)) {
             $this->ret($result, 0, '无权限进行操作');
+        }
+
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) == 0) {
+            $this->ret($result, 0, '日期格式须为 xxxx-xx-xx');
+        }
+        if (preg_match('/^\d{2}:\d{2}$/', $start_time) == 0 || preg_match('/^\d{2}:\d{2}$/', $end_time) == 0) {
+            $this->ret($result, 0, '时间格式须为 xx:xx');
         }
 
         $data = [
@@ -650,6 +700,9 @@ class AdminController extends Controller {
         }
         if ($admin_weight < 1) {
             $this->ret($result, 0, '无权限');
+        }
+        if (empty($operation_list)) {
+            $this->ret($result, 0, '请为角色分配至少一个权限');
         }
         $db_role = M('gym_role');
         $get_gym_admin = $db_role->table('gym_admin')->field('role_id')->where(['gym_admin_id' => $u_id])->find();
@@ -1063,7 +1116,7 @@ class AdminController extends Controller {
      * @param int $u_id 用户id
      * @param int $admin_weight 权限权重，0、1、2、10
      * @param int $gym_id 场馆id
-     * @param int $operation_id 操作id，当场馆管理员一定无的权限时传入0
+     * @param int $operation_id 操作id，当场馆管理员一定无的权限时传入0，场馆管理员一定可以有的操作传入true
      * @return boolean
      */
     private function can_do($u_id, $admin_weight, $gym_id, $operation_id = 0) {
@@ -1077,7 +1130,7 @@ class AdminController extends Controller {
                 $get_gym_admin = $db->table('gym_admin')->field('role_id')->where(['gym_admin_id' => $u_id])->find();
                 $get_gym_role = $db->table('gym_role')->field('gym_id, operation_list')->where(['role_id' => $get_gym_admin['role_id']])->find();
                 $operation_list = explode('|', $get_gym_role['operation_list']);
-                if (!in_array($operation_id, $operation_list)) {
+                if ($operation_id !== true && !in_array($operation_id, $operation_list)) {
                     return false;
                 }
                 if ($gym_id != $get_gym_role['gym_id']) {
