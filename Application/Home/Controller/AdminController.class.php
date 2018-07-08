@@ -1,10 +1,13 @@
 <?php
 namespace Home\Controller;
-use Think\Controller;
-class AdminController extends Controller {
 
-    public function __construct(){
-        // dump($_SERVER['PATH_INFO']);
+use Think\Controller;
+
+class AdminController extends Controller
+{
+
+    public function __construct()
+    {
         if ($_SERVER['REQUEST_METHOD'] != 'OPTIONS') {
             if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                 $request_data = json_encode(I('get.'));
@@ -24,7 +27,8 @@ class AdminController extends Controller {
     /**
      * 验证是否登录态
      */
-    public function islogin() {
+    public function islogin()
+    {
         $u_id = session('u_id');
         if ($u_id == null) {
             $this->ret($result, -1, '未登录');
@@ -60,11 +64,12 @@ class AdminController extends Controller {
     /**
      * 登录
      */
-    public function login() {
+    public function login()
+    {
         $post = I('post.');
         $account = trim($post['account']);
         $password = trim($post['password']);
-        
+
         if (preg_match('/^(13[0-9]|14[579]|15[0-3,5-9]|16[6]|17[0135678]|18[0-9]|19[89])\\d{8}$/', $account) == 0) {
             // 非手机号登录
             $db_user = M('gym_admin');
@@ -112,7 +117,8 @@ class AdminController extends Controller {
     /**
      * 获取场馆列表
      */
-    public function get_gym_list() {
+    public function get_gym_list()
+    {
         $city_id = I('get.city_id');
         $type_id = I('get.type_id');
 
@@ -297,7 +303,8 @@ class AdminController extends Controller {
     /**
      * 添加场馆
      */
-    public function add_gym() {
+    public function add_gym()
+    {
         $u_id = session('u_id');
         $admin_weight = session('admin_weight');
         if (empty($admin_weight) || $admin_weight <= 1) {
@@ -323,11 +330,12 @@ class AdminController extends Controller {
             $this->ret($result);
         }
     }
-    
+
     /**
      * 更新场馆信息
      */
-    public function update_gym() {
+    public function update_gym()
+    {
         $admin_weight = session('admin_weight');
         $u_id = session('u_id');
         $post = I('post.');
@@ -363,11 +371,12 @@ class AdminController extends Controller {
         M('gym')->where(['gym_id' => $gym_id])->save($update_data);
         $this->ret($result);
     }
-    
+
     /**
      * 删除场馆
      */
-    public function delete_gym(){
+    public function delete_gym()
+    {
         $u_id = session('u_id');
         $admin_weight = session('admin_weight');
         $gym_id = I('post.gym_id');
@@ -402,7 +411,7 @@ class AdminController extends Controller {
         }
 
         if (!in_array($type_id, ['0', '1', '2', '3', '4', '5', '6', '7'])) {
-            $this->ret($result, 0, '添加场地时type_id范围只能为0-7');            
+            $this->ret($result, 0, '添加场地时type_id范围只能为0-7');
         }
         if (empty($site_name)) {
             $this->ret($result, 0, '场地名称不能留空');
@@ -509,9 +518,9 @@ class AdminController extends Controller {
         }
 
         // 获取近七天的日期列表
-        $time  = time();
+        $time = time();
         $date = [];
-        for ($i = 0; $i < 7; $i++){
+        for ($i = 0; $i < 7; $i++) {
             $date[$i] = date('Y-m-d', strtotime('+' . $i . ' days', $time));
         }
 
@@ -526,6 +535,9 @@ class AdminController extends Controller {
             ->where(['gym_site_id' => $gym_site_id])
             ->where(['date' => ['in', $date]])
             ->select();
+        for ($i = 0, $len = count($get_list); $i < $len; $i++) {
+            $get_list[$i]['key'] = $i;
+        }
         $result['list'] = $get_list;
         $this->ret($result);
     }
@@ -676,8 +688,8 @@ class AdminController extends Controller {
             for ($j = 0, $len_j = count($operation_list); $j < $len_j; $j++) {
                 $get_role_list[$i]['operation_list'][] = [
                     'key' => $j,
-                    'operation_id' => $get_operation_list[$operation_list[$j] -1]['operation_id'],
-                    'label' => $get_operation_list[$operation_list[$j] -1]['label']
+                    'operation_id' => $get_operation_list[$operation_list[$j] - 1]['operation_id'],
+                    'label' => $get_operation_list[$operation_list[$j] - 1]['label'],
                 ];
             }
         }
@@ -689,7 +701,8 @@ class AdminController extends Controller {
     /**
      * 添加场馆角色
      */
-    public function add_gym_role() {
+    public function add_gym_role()
+    {
         $u_id = session('u_id');
         $admin_weight = session('admin_weight');
         $gym_id = I('post.gym_id');
@@ -818,7 +831,8 @@ class AdminController extends Controller {
     /**
      * 添加管理员账号
      */
-    public function add_gym_admin() {
+    public function add_gym_admin()
+    {
         $u_id = session('u_id');
         $admin_weight = session('admin_weight');
         $role_id = I('post.role_id');
@@ -965,11 +979,6 @@ class AdminController extends Controller {
                 }
             }
         }
-        // $get_role = $db->table('gym_admin')->field('role_id')->where(['gym_admin_id' => $gym_admin_id])->find();
-        // $get_gym_id = $db->table('gym_role')->field('gym_id')->where(['role_id' => $get_role['role_id']])->find();
-        // if (!$this->can_do($u_id, $admin_weight, $get_gym_id['gym_id'], 1)) {
-        //     $this->ret($result, 0, '无权限进行操作');
-        // }
 
         $get_order_list = $db->table('book_order')
             ->field([
@@ -1035,7 +1044,7 @@ class AdminController extends Controller {
             $order_index = $gym_list[$get_order_list[$i]['order_id']];
             $order_list[$order_index]['detail'] .= $get_order_list[$i]['gym_site_name'] . '(' . $type_map[$get_order_list[$i]['type_id']] . ') ' . $get_order_list[$i]['date'] . ' ' . $get_order_list[$i]['start_time'] . '-' . $get_order_list[$i]['end_time'] . ' ';
         }
-        
+
         $result['order_list'] = $order_list;
         $this->ret($result);
     }
@@ -1061,6 +1070,9 @@ class AdminController extends Controller {
             ->join('user on user.u_id = apply_list.u_id')
             ->order('apply_time desc')
             ->select();
+        for ($i = 0, $len = count($apply_list); $i < $len; $i++) {
+            $apply_list[$i]['key'] = $i;
+        }
         $result['apply_list'] = $apply_list;
         $this->ret($result);
     }
@@ -1110,7 +1122,7 @@ class AdminController extends Controller {
         $result['last_time'] = $update['last_time'];
         $this->ret($result);
     }
-    
+
     /**
      * 验证是否有权限操作
      * @param int $u_id 用户id
@@ -1119,7 +1131,8 @@ class AdminController extends Controller {
      * @param int $operation_id 操作id，当场馆管理员一定无的权限时传入0，场馆管理员一定可以有的操作传入true
      * @return boolean
      */
-    private function can_do($u_id, $admin_weight, $gym_id, $operation_id = 0) {
+    private function can_do($u_id, $admin_weight, $gym_id, $operation_id = 0)
+    {
         $db = M();
         if (empty($admin_weight)) {
             return false;
@@ -1152,7 +1165,8 @@ class AdminController extends Controller {
     /**
      * 生成随机字符串
      */
-    private function generate_string($length = 4) {  
+    private function generate_string($length = 4)
+    {
         // 密码字符集，可任意添加你需要的字符
         $chars = 'abcdefghijklmnopqrstuvwxyz1234567890';
         $string = '';
@@ -1186,7 +1200,8 @@ class AdminController extends Controller {
         ]);
     }
 
-    private function ret(&$result, $status = 1, $msg = "") {
+    private function ret(&$result, $status = 1, $msg = "")
+    {
         $result['status'] = $status;
         $result['msg'] = $msg;
         $this->ajaxReturn($result);
