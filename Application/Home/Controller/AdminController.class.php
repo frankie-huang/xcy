@@ -1164,6 +1164,7 @@ class AdminController extends Controller
     public function agree()
     {
         $apply_id = I('post.apply_id');
+        $u_id = session('u_id');
         $admin_weight = session('admin_weight');
         if ($admin_weight < 10) {
             $this->ret($result, 0, '只有超管可以处理用户的申请');
@@ -1189,6 +1190,7 @@ class AdminController extends Controller
     public function refuse()
     {
         $apply_id = I('post.apply_id');
+        $u_id = session('u_id');
         $admin_weight = session('admin_weight');
         if ($admin_weight < 10) {
             $this->ret($result, 0, '只有超管可以处理用户的申请');
