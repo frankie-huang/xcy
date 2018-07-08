@@ -644,7 +644,7 @@ class AdminController extends Controller
         if (empty($date)) {
             $this->ret($result, 0, '日期不能为空');
         }
-        $date = date('Y-m-d', $data);
+        $date = date('Y-m-d', $date);
         if (preg_match('/^\d{2}:\d{2}$/', $start_time) == 0 || preg_match('/^\d{2}:\d{2}$/', $end_time) == 0) {
             $this->ret($result, 0, '时间格式须为 xx:xx');
         }
