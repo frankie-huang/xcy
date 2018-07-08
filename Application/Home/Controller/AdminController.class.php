@@ -115,6 +115,66 @@ class AdminController extends Controller
     }
 
     /**
+     * 获取全部用户列表
+     */
+    public function get_user_list()
+    {
+        $u_id = session('u_id');
+        $admin_weight = session('admin_weight');
+        $post = I('get.');
+
+        if ($admin_weight < 10) {
+            $this->ret($result, 0, '只有超管有权限查看用户列表');
+        }
+
+        $user_list = M('user')->field('u_id, nick, phone_number, gender, admin_weight');
+        if (isset($post['is_admin'])) {
+            if ($post['is_admin'] == '0') {
+                $user_list = $user_list->where(['admin_weight' => 0]);
+            } elseif ($post['is_admin'] == '1') {
+                $user_list = $user_list->where(['admin_weight' => ['EGT', 2]]);
+            }
+        }
+        if (isset($post['gender'])) {
+            $user_list = $user_list->where(['gender' => $post['gender']]);
+        }
+        $user_list = $user_list->select();
+        for ($i = 0, $len = count($user_list); $i < $len; $i++) {
+            $user_list[$i]['key'] = $i;
+        }
+        $result['list'] = $user_list;
+        $this->ret($result);
+    }
+
+    /**
+     * 将用户升级为商家BOSS或者超管，或者降级为普通用户
+     */
+    public function change_user_auth()
+    {
+        $u_id = session('u_id');
+        $admin_weight = session('admin_weight');
+        $post = I('post.');
+
+        if ($admin_weight < 10) {
+            $this->ret($result, 0, '只有超管有权限改变用户权限');
+        }
+
+        $db = M('user');
+        $user_info = $db->where(['u_id' => $post['u_id']])->find();
+        if (empty($user_info)) {
+            $this->ret($result, 0, '查询不到用户信息');
+        }
+        if (!in_array($post['admin_weight'], ['0', '2', '10'])) {
+            $this->ret($result, 0, 'admin_weight数据须是0、2或10');
+        }
+        if ($user_info['admin_weight'] == $post['admin_weight']) {
+            $this->ret($result, 0, '该用户已经是当前权限');
+        }
+        $db->where(['u_id' => $post['u_id']])->setField('admin_weight', $post['admin_weight']);
+        $this->ret($result);
+    }
+
+    /**
      * 获取场馆列表
      */
     public function get_gym_list()
@@ -1096,6 +1156,7 @@ class AdminController extends Controller
         $update['status'] = 1;
         $update['last_time'] = date('Y-m-d H:i:s');
         $db->where(['apply_id' => $apply_id])->save($update);
+        $db->table('user')->where(['u_id' => $get_apply['u_id']])->setField('admin_weight', 2);
         $result['last_time'] = $update['last_time'];
         $this->ret($result);
     }
