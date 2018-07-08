@@ -601,7 +601,7 @@ class AdminController extends Controller
         $get_list = $db->table('gym_site_time')
             ->field([
                 'gym_site_time_id',
-                'date',
+                'date' => 'UNIX_TIMESTAMP(date)',
                 'start_time',
                 'end_time',
                 'price',
@@ -640,9 +640,7 @@ class AdminController extends Controller
             $this->ret($result, 0, '无权限进行操作');
         }
 
-        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) == 0) {
-            $this->ret($result, 0, '日期格式须为 xxxx-xx-xx');
-        }
+        $date = date('Y-m-d', $data);
         if (preg_match('/^\d{2}:\d{2}$/', $start_time) == 0 || preg_match('/^\d{2}:\d{2}$/', $end_time) == 0) {
             $this->ret($result, 0, '时间格式须为 xx:xx');
         }
@@ -686,6 +684,7 @@ class AdminController extends Controller
             $update_data['price'] = $post['price'];
         }
         if (isset($post['date'])) {
+            $post['date'] = date('Y-m-d', $post['date']);
             $update_data['date'] = $post['date'];
         }
         if (isset($post['start_time'])) {
