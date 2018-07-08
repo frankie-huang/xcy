@@ -524,7 +524,7 @@ class AdminController extends Controller {
                 'price',
             ])
             ->where(['gym_site_id' => $gym_site_id])
-            ->where(['date', ['in', $date]])
+            ->where(['date' => ['in', $date]])
             ->select();
         $result['list'] = $get_list;
         $this->ret($result);
