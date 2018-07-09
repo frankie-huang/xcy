@@ -663,7 +663,6 @@ class IndexController extends Controller {
         if ($u_id == null) {
             $this->ret($result, -1, '未登录');
         }
-        $u_id = 1;
         $is_read = I('get.is_read');
 
         M('message')->where(['u_id' => $u_id])->setField('is_read','1');
