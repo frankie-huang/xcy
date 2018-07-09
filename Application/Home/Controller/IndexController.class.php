@@ -830,6 +830,7 @@ class IndexController extends Controller {
      */
     public function get_order_detail() {
         $order_id = I('get.order_id');
+        $u_id = session('u_id');
         $order = M('book_order')
            ->join('order_site on order_site.order_id = book_order.order_id','LEFT')
            ->join('gym_site_time on gym_site_time.gym_site_time_id = order_site.gym_site_time_id','LEFT')
@@ -950,6 +951,25 @@ class IndexController extends Controller {
                 case 9:
                 $order['type_name'] = '未知';break;
             }
+
+
+            $is_comment = M('comment')->where([
+                'comment.order_id' => $order['order_id'],
+                'comment.u_id' => $u_id
+                ])->find();
+            if(empty($is_comment)){
+                $order['is_comment'] = 0;
+            } else {
+                // $this->ret($is_comment);
+                $order['is_comment'] = 1;
+                $order['comment'] = $is_comment['content'];
+                $order['star'] = $is_comment['star'];
+            }
+
+
+
+
+
 
             if($order){
                 $result['detail'] = $order;
