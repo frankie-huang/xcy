@@ -534,7 +534,25 @@ class IndexController extends Controller {
             }
             // dump($k);
             // dump($gym_site_time);
-            $gym_site[$k]['list'] = $gym_site_time;
+
+            $gym_site_time_new = [
+                0 => [],
+                1 => [],
+                2 => [],
+                3 => [],
+                4 => [],
+                5 => [],
+                6 => [],
+            ];
+
+
+            for ($i = 0, $len = count($gym_site_time); $i < $len; $i++){
+                $key = array_search($gym_site_time[$i]['date'], $date);
+
+                // dump($key);
+                array_push($gym_site_time_new[$key],$gym_site_time[$i]);
+            }
+            $gym_site[$k]['list'] = $gym_site_time_new;
         }
         // 
 
