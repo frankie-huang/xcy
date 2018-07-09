@@ -657,7 +657,7 @@ class IndexController extends Controller {
         $message['from'] = '0';
         $message['time'] = date('Y-m-d H:i:s',time());
         $message['u_id'] = $u_id;
-        M('message').add($message);
+        M('message')->add($message);
         $this->ret($result);
 
     }
