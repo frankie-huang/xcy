@@ -609,7 +609,6 @@ class IndexController extends Controller {
         if ($u_id == null) {
             $this->ret($result, -1, '未登录');
         }
-        $u_id =1;
         $db_gym = M('gym_site_time');
         $amount = 0;
         for($i = 0, $len = count($id_list); $i < $len; $i++){
