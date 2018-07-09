@@ -641,7 +641,8 @@ class IndexController extends Controller {
         $data['u_id'] = $u_id;
         $data['amount'] = $amount;
         $order_id = M('book_order')->add($data);
-
+        dump($new_balance);
+        dump($data);
         
         for($i = 0, $len = count($id_list); $i < $len; $i++){
             $order[$i]['order_id'] = $order_id;
@@ -649,7 +650,7 @@ class IndexController extends Controller {
             M('order_site')->add($order[$i]);
         }
 
-        $this->ret($result);
+        // $this->ret($result);
 
     }
 
