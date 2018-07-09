@@ -614,6 +614,8 @@ class IndexController extends Controller {
         for($i = 0, $len = count($id_list); $i < $len; $i++){
             $gym_site_time = $db_gym->where(['gym_site_time.gym_site_id' => $id_list[$i]])->find();
             $amount += $gym_site_time['price'];
+            dump($gym_site_time);
+            dump($amount);
         }
 
         // 判断是否有余量
@@ -641,8 +643,7 @@ class IndexController extends Controller {
         $data['u_id'] = $u_id;
         $data['amount'] = $amount;
         $order_id = M('book_order')->add($data);
-        dump($new_balance);
-        dump($data);
+
         
         for($i = 0, $len = count($id_list); $i < $len; $i++){
             $order[$i]['order_id'] = $order_id;
