@@ -1193,8 +1193,45 @@ class IndexController extends Controller {
 
 
 
+    /**
+     * 查看流水
+     */
+    public function get_account() {
+        $u_id = session('u_id');
+        $recharge_list = M('recharge_order')
+            ->where(['recharge_order.u_id' => $u_id])
+            ->field([
+                'amount' => 'money',
+                'recharge_time' => 'time'
+            ])
+            ->select();
+        for ($i = 0, $len = count($recharge_list); $i < $len; $i++){
+            $recharge_list[$i]['is_recharge'] = 1;
+        }
+        
+        $order_list = M('book_order')
+            ->where(['book_order.u_id' => $u_id])
+            ->field([
+                'amount' => 'money',
+                'success_time' => 'time'
+            ])
+            ->select();
+        for ($i = 0, $len = count($order_list); $i < $len; $i++){
+            $order_list[$i]['is_recharge'] = 0;
+        }
+        $balance_list = array_merge($recharge_list,$order_list);
+        for ($i = 0, $len = count($balance_list); $i < $len; $i++){
+            $balance_list[$i]['stamp'] = strtotime($balance_list[$i]['time']);
+        }
+        array_multisort(array_column($balance_list,'stamp'),SORT_DESC,$balance_list);
+        if ($balance_list === false) {
+            $this->ret($result, 0, '数据库查询出错');
+        } else {
+            $result['balance_list'] = $balance_list;
+            $this->ret($result);
+        }
 
-
+    }
 
 
     /**
