@@ -800,6 +800,20 @@ class IndexController extends Controller {
                 $gym_list[$i]['type_name'] = '未知';break;
             }
         }
+
+        for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
+            $is_comment = M('comment')->where(['comment.order_id' => $gym_list[$i]['order_id']])->select();
+            if(empty($is_comment)){
+                $gym_list[$i]['is_comment'] = 0;
+            } else {
+                $gym_list[$i]['is_comment'] = 1;
+            }
+        }
+
+
+
+
+
         // dump($gym_list);
         if ($gym_list === false) {
             $this->ret($result, 0, '数据库查询出错');
