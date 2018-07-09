@@ -612,10 +612,10 @@ class IndexController extends Controller {
         $db_gym = M('gym_site_time');
         $amount = 0;
         for($i = 0, $len = count($id_list); $i < $len; $i++){
-            $gym_site_time = $db_gym->where(['gym_site_time.gym_site_id' => $id_list[$i]])->find();
+            $gym_site_time = $db_gym->where(['gym_site_time.gym_site_time_id' => $id_list[$i]])->find();
             $amount += $gym_site_time['price'];
-            dump($gym_site_time);
-            dump($amount);
+            // dump($gym_site_time);
+            // dump($amount);
         }
 
         // 判断是否有余量
@@ -651,7 +651,7 @@ class IndexController extends Controller {
             M('order_site')->add($order[$i]);
         }
 
-        // $this->ret($result);
+        $this->ret($result);
 
     }
 
