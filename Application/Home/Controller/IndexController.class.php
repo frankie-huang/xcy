@@ -651,6 +651,13 @@ class IndexController extends Controller {
             M('order_site')->add($order[$i]);
         }
 
+
+        $message['is_read'] = 0;
+        $message['content'] = '恭喜你,订场成功。';
+        $message['from'] = '0';
+        $message['time'] = date('Y-m-d H:i:s',time());
+        $message['u_id'] = $u_id;
+        M('message').add($message);
         $this->ret($result);
 
     }
