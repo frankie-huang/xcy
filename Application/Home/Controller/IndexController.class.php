@@ -1013,7 +1013,6 @@ class IndexController extends Controller {
         if ($u_id == null) {
             $this->ret($result, -1, '未登录');
         }
-        $u_id = 1;
         $order_id = I('post.order_id');
         $star = I('post.star');
         $content = I('post.content');
