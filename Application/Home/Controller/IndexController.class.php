@@ -523,8 +523,18 @@ class IndexController extends Controller {
         
         foreach($gym_site as $k=>$v) {
             $gym_site_time = M('gym_site_time')
+                ->join('gym_site on gym_site.gym_site_id = gym_site_time.gym_site_id','LEFT')
                 ->where(['gym_site_time.gym_site_id' => $v['gym_site_id']])
                 ->where($map)
+                ->field([
+                    'gym_site_time_id',
+                    'gym_site_time.gym_site_id',
+                    'date',
+                    'start_time',
+                    'end_time',
+                    'price',
+                    'gym_site.number'
+                ])
                 ->select();
             
             for ($i = 0, $len = count($gym_site_time); $i < $len; $i++){
