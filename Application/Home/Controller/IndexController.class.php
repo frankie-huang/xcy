@@ -1198,6 +1198,7 @@ class IndexController extends Controller {
      */
     public function get_account() {
         $u_id = session('u_id');
+        $u_id = 3;
         $recharge_list = M('recharge_order')
             ->where(['recharge_order.u_id' => $u_id])
             ->field([
@@ -1223,7 +1224,18 @@ class IndexController extends Controller {
         for ($i = 0, $len = count($balance_list); $i < $len; $i++){
             $balance_list[$i]['stamp'] = strtotime($balance_list[$i]['time']);
         }
+        $init = 0;
+        
         array_multisort(array_column($balance_list,'stamp'),SORT_DESC,$balance_list);
+
+        foreach(array_reverse($balance_list) as $key=>$value){ 
+            if($value['is_recharge'] == 1){
+                $init += $value['money'];
+            } else {
+                $init -= $value['money'];
+            }
+            $balance_list[count($balance_list)-1-$key]['balance'] = $init;
+        } 
         if ($balance_list === false) {
             $this->ret($result, 0, '数据库查询出错');
         } else {
