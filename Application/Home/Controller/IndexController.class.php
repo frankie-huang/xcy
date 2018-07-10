@@ -846,7 +846,7 @@ class IndexController extends Controller {
         }
 
 
-
+        $gym_list = array_reverse($gym_list);
 
 
         // dump($gym_list);
