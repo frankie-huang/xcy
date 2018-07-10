@@ -121,6 +121,7 @@ class AdminController extends Controller
     {
         session('u_id', null);
         session('admin_weight', null);
+        $this->ret($result);
     }
 
     /**
