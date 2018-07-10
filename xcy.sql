@@ -172,6 +172,6 @@ CREATE TABLE `request_log` (
     `method` varchar(20),
     `path` varchar(200),
     `data` text,
-    `time` datetime DEFAULT now(),
+    `time` datetime DEFAULT now()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
