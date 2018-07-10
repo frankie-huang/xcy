@@ -167,3 +167,11 @@ CREATE TABLE `log` (
     `time` datetime COMMENT "操作时间"
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `request` (
+    `log_id` int(10) PRIMARY KEY AUTO_INCREMENT COMMENT "日志ID",
+    `method` varchar(20),
+    `path` varchar(200),
+    `data` text,
+    `time` datetime DEFAULT now(),
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
