@@ -261,38 +261,59 @@ class IndexController extends Controller {
             } else {
                 $gym_list = $gym_list->select();
             }
+            // $this->ret($gym_list);
 
 
 
-
-            for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
-                // $gym_list[$i]['key'] = $i;
-                // 判断其type_id
-                $gym_list[$i]['star'] = (int)$gym_list[$i]['star']; 
-                $get_gym_site = $db_gym->table('gym_site')->field('type_id')->where(['gym_id' => $gym_list[$i]['gym_id']])->select();
-                $num = count($get_gym_site);
-                if ($num == 0) {
-                    $gym_list[$i]['type_id'] = 9;
-                } else {
-                    $gym_list[$i]['type_id'] = $get_gym_site[0]['type_id'];
-                    if ($num > 1) {
-                        for ($j = 1; $j < $num; $j++) {
-                            if ($get_gym_site[$j]['type_id'] != $get_gym_site[0]['type_id']) {
-                                $gym_list[$i]['type_id'] = 8;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+            // for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
+            //     // $gym_list[$i]['key'] = $i;
+            //     // 判断其type_id
+            //     $gym_list[$i]['star'] = (int)$gym_list[$i]['star']; 
+            //     $get_gym_site = $db_gym->table('gym_site')->field('type_id')->where(['gym_id' => $gym_list[$i]['gym_id']])->select();
+            //     $num = count($get_gym_site);
+            //     if ($num == 0) {
+            //         $gym_list[$i]['type_id'] = 9;
+            //     } else {
+            //         $gym_list[$i]['type_id'] = $get_gym_site[0]['type_id'];
+            //         if ($num > 1) {
+            //             for ($j = 1; $j < $num; $j++) {
+            //                 if ($get_gym_site[$j]['type_id'] != $get_gym_site[0]['type_id']) {
+            //                     $gym_list[$i]['type_id'] = 8;
+            //                     break;
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
+            $gym_list1 =[];
+            // for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
+            //     $gym_site = M('gym_site')->where([
+            //         'gym_site.gym_id' => $gym_list[$i]['gym_id'],
+            //         'gym_site.type_id' => $type_id
+            //     ])->select();
+            //     if(!empty($gym_site)){
+            //         $gym_list[$i]['type_id']==$type_id;
+            //         array_push($gym_list1,$gym_list[$i]);
+            //     }
+            // }
 
 
             if($type_id == 100){
                 $gym_list1 = $gym_list;
             } else {
-                for ($i = 0, $len = count($gym_list); $i < $len; $i++){
-                    if($gym_list[$i]['type_id']==$type_id){
-                        $gym_list1.push($gym_list[$i]);
+                // for ($i = 0, $len = count($gym_list); $i < $len; $i++){
+                //     if($gym_list[$i]['type_id']==$type_id){
+                //         $gym_list1.push($gym_list[$i]);
+                //     }
+                // }
+                for ($i = 0, $len = count($gym_list); $i < $len; $i++) {
+                    $gym_site = M('gym_site')->where([
+                        'gym_site.gym_id' => $gym_list[$i]['gym_id'],
+                        'gym_site.type_id' => $type_id
+                    ])->select();
+                    if(!empty($gym_site)){
+                        // $gym_list[$i]['type_id']=$type_id;
+                        array_push($gym_list1,$gym_list[$i]);
                     }
                 }
             }
