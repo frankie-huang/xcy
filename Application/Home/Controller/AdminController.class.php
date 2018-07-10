@@ -1160,6 +1160,7 @@ class AdminController extends Controller
             ->field([
                 'apply_id',
                 'user.phone_number' => 'user',
+                'nick',
                 'apply_time',
                 'status',
                 'last_time',
