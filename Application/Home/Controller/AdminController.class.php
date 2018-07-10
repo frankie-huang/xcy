@@ -1238,7 +1238,7 @@ class AdminController extends Controller
             $this->ret($result, 0, '只有超管可以查看操作日志');
         }
 
-        $get_log_list = M('log')->field('log_id, u_id, account, operation_detail, time');
+        $get_log_list = M('log')->field('log_id, u_id, account, operation_detail, time')->order('time desc');
         if (!empty($get['u_id'])) {
             $get_log_list = $get_log_list->where(['u_id' => $get['u_id']]);
         }
