@@ -563,6 +563,15 @@ class IndexController extends Controller {
                 $num = count(M('order_site')->where(['gym_site_time_id'=>$gym_site_time[$i]['gym_site_time_id']])->select());
                 $gym_site_time[$i]['remain'] = $gym_site_time[$i]['number']-$num;
             }
+            $now = strtotime('now');
+            for ($i = 0, $len = count($gym_site_time); $i < $len; $i++){
+                $stamp = strtotime($gym_site_time[$i]['date'].' '.$gym_site_time[$i]['start_time']);
+                if($now>$stamp){
+                    unset($gym_site_time[$i]);
+                }
+
+            }
+            $gym_site_time = array_values($gym_site_time);
             // dump($k);
             // dump($gym_site_time);
 
