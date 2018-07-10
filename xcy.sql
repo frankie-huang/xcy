@@ -164,7 +164,6 @@ CREATE TABLE `log` (
     `is_admin` int(1) COMMENT "是否商户管理员，0为否，1为是",
     `account` varchar(200) COMMENT "账号名，手机号或者管理员账号",
     `operation_detail` text COMMENT "操作细节，包括但不限于登录，审批商户，商户添加修改删除场馆信息等",
-    `time` datetime COMMENT "操作时间",
-    FOREIGN KEY (`u_id`) REFERENCES `user` (`u_id`) ON DELETE CASCADE
+    `time` datetime COMMENT "操作时间"
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
