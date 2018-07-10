@@ -115,6 +115,16 @@ class AdminController extends Controller
     }
 
     /**
+     * 退出登录
+     */
+    public function logout()
+    {
+        session('u_id', null);
+        session('admin_weight', null);
+        $this->ret($result);
+    }
+
+    /**
      * 获取全部用户列表
      */
     public function get_user_list()
@@ -212,6 +222,7 @@ class AdminController extends Controller
                     'detail_address',
                     'detail_msg',
                 ])
+                ->order('gym_id desc')
                 ->where(['is_delete' => '0']);
             if (!empty($city_id)) {
                 $gym_list = $gym_list->where(['gym.city_id' => $city_id]);
@@ -265,6 +276,7 @@ class AdminController extends Controller
                     'detail_address',
                     'detail_msg',
                 ])
+                ->order('gym_id desc')
                 ->where(['is_delete' => '0'])
                 ->where(['gym.founder' => $u_id]);
             if (!empty($city_id)) {
@@ -326,6 +338,7 @@ class AdminController extends Controller
                     'detail_address',
                     'detail_msg',
                 ])
+                ->order('gym_id desc')
                 ->where(['is_delete' => '0'])
                 ->where(['gym.gym_id' => $get_gym_id['gym_id']]);
             if (!empty($city_id)) {
