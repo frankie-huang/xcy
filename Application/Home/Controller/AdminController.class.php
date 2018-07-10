@@ -115,6 +115,15 @@ class AdminController extends Controller
     }
 
     /**
+     * 退出登录
+     */
+    public function logout()
+    {
+        session('u_id', null);
+        session('admin_weight', null);
+    }
+
+    /**
      * 获取全部用户列表
      */
     public function get_user_list()
