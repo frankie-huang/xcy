@@ -572,8 +572,7 @@ class IndexController extends Controller {
 
             }
             $gym_site_time = array_values($gym_site_time);
-            // dump($k);
-            // dump($gym_site_time);
+
 
             $gym_site_time_new = [
                 0 => [],
