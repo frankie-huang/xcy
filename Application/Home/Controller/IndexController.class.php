@@ -225,7 +225,7 @@ class IndexController extends Controller {
      */
     // $city_id,$type_id = '8',$sort_type = '0'
     public function get_type_gym() {
-        if(!empty(I('get.type_id'))){
+        if(I('get.type_id') == '0' || !empty(I('get.type_id'))){
             $type_id = I('get.type_id');
         } else {
             $type_id = 100;
