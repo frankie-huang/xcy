@@ -662,10 +662,10 @@ class IndexController extends Controller {
 
 
         $user = M('user')->where(['user.u_id' => $u_id])->find();
-        if((int)$user['balance']-(int)$amount<0){
+        if((float)$user['balance']-(float)$amount<0){
             $this->ret($result, 0, '余额不足');
         }
-        $new_balance = (int)$user['balance']-(int)$amount;
+        $new_balance = (float)$user['balance']-(float)$amount;
         M('user')->where(['user.u_id' => $u_id])->setField('balance',$new_balance);
         $time = date('Y-m-d H:i:s',time());
         $data['success_time'] = $time;
