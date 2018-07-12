@@ -1185,7 +1185,7 @@ class IndexController extends Controller {
         $data['recharge_time'] = date('Y-m-d H:i:s',time());
         $user = M('user')->where(['user.u_id' => $u_id])->find();
 
-        $new_balance = (int)$user['balance']+(int)$number;
+        $new_balance = (float)$user['balance']+(float)$number;
 
         M('recharge_order')->add($data);
         M('user')->where(['user.u_id' => $u_id])->setField('balance',$new_balance);
