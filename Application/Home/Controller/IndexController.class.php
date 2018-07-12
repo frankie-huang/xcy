@@ -1227,7 +1227,7 @@ class IndexController extends Controller {
      */
     public function get_account() {
         $u_id = session('u_id');
-        $u_id = 3;
+        // $u_id = 3;
         $recharge_list = M('recharge_order')
             ->where(['recharge_order.u_id' => $u_id])
             ->field([
