@@ -721,6 +721,7 @@ class IndexController extends Controller {
         } else {
             $message_list = $message_list->select();
         }
+        $message_list = array_reverse($message_list);
         if ($message_list === false) {
             $this->ret($result, 0, '数据库查询出错');
         } else {
